@@ -12,19 +12,20 @@ public class TestThreadSort {
 		  arr.add(rand);
 		  arr_control.add(rand);
 	  }
-
+	  
+	  
 	long old = System.nanoTime();
 	//proliferateQuickSort(arr);
 	//proliferateMergeSort(arr);
 	timSort(arr, 10);
 	
-  	System.out.println("Post Sort: "+(System.nanoTime() - old) * 0.000001);
+  	System.out.println("Post Merge: "+(System.nanoTime() - old) * 0.000001);
   		
   	old = System.nanoTime();
 	//arr_control.sort(null);
   	timSort(arr_control, 1);
   	
-  	System.out.println("Post Sort: "+(System.nanoTime() - old) * 0.000001);
+  	System.out.println("Post Merge: "+(System.nanoTime() - old) * 0.000001);
    }   
    
    // Calls quicksort recursively creating n threads, complete failure
