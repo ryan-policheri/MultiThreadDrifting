@@ -22,7 +22,7 @@ public class GenerateInputDriver {
 
         Random r = new Random();
         for (int i = 0; i < inputSize; i++) {
-            int rand = r.nextInt(100);
+            long rand = r.nextLong();
             String randAsStr = String.valueOf(rand);
             writer.write(randAsStr);
             if(i != (inputSize - 1)) { writer.write(","); }
