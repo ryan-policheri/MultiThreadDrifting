@@ -73,8 +73,7 @@ public class BucketManager {
     }
 
     private long calculateBucketNumber(long number) {
-        double value = number / _bucketLength;
-        long bucketNumber = (long) value;
+        long bucketNumber = number / _bucketLength;
         return bucketNumber;
     }
 
