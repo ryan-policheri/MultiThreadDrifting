@@ -45,4 +45,8 @@ public class InputReader implements Runnable {
             _thread.start();
         }
     }
+
+    public boolean isRunning() {
+        return _thread.isAlive();
+    }
 }

@@ -2,7 +2,6 @@ import java.io.File;
 import java.io.FileWriter;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.Random;
 
 public class GenerateInputDriver {

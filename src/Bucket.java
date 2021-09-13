@@ -5,13 +5,15 @@ public class Bucket {
     private long _lowerBound;
     private long _upperBound;
     private boolean _isSorted;
+    private boolean _isCheckedOut;
     private ArrayList<Long> _items;
 
     public Bucket(String name, long lowerBound, long upperBound) {
         _name = name;
         _lowerBound = lowerBound;
         _upperBound = upperBound;
-        _isSorted = true;
+        _isCheckedOut = false;
+        _isSorted = false;
         _items = new ArrayList<Long>();
     }
 
@@ -25,6 +27,10 @@ public class Bucket {
         _isSorted = true;
     }
 
+    public boolean isSorted() {
+        return _isSorted;
+    }
+
     public boolean itemBelongs(long item) {
         if (item >= _lowerBound && item <= _upperBound) {
             return true;
@@ -34,5 +40,18 @@ public class Bucket {
 
     public String getName() {
         return _name;
+    }
+
+    public Bucket checkout() {
+        _isCheckedOut = true;
+        return this;
+    }
+
+    public boolean isCheckedOut() {
+        return _isCheckedOut;
+    }
+
+    public void checkin() {
+        _isCheckedOut = false;
     }
 }
