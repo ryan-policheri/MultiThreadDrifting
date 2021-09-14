@@ -1,3 +1,7 @@
+package bucketsort1;
+
+import bucketsort1.BucketManager;
+
 public class SortWorker implements Runnable {
     private BucketManager _sharedBucketManager;
     private Thread _thread;
