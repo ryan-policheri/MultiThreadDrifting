@@ -10,6 +10,7 @@ public class SortWorker implements Runnable {
     public void run() {
         Bucket bucket = _sharedBucketManager.checkoutAnyBucket();
         if (bucket != null) {
+            //System.out.println("Sorted"+bucket.getName()+" "+bucket.isSorted());
             bucket.sort();
             bucket.checkin();
         }

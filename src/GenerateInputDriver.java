@@ -26,6 +26,7 @@ public class GenerateInputDriver {
             writer.write(randAsStr);
             if(i != (inputSize - 1)) { writer.write(","); }
             writer.flush();
+            if (i%1000000 == 0) { System.out.println(i+" "+rand); }
         }
 
         return file.getAbsolutePath();

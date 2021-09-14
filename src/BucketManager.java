@@ -15,7 +15,7 @@ public class BucketManager {
         _buffer = new ArrayList<Long>(); //if a bucket is checked out for sorting when received we can push the value here to process later so that we don't hold up I/O
     }
 
-    public void push(long number) {
+    public synchronized void push(long number) {
         Bucket bucket = findBucket(number);
         if (bucket == null) {
             bucket = createBucket(number);
@@ -26,31 +26,39 @@ public class BucketManager {
             bucket.addItem(number);
         }
         else {
-            _buffer.add(number);
+            //_buffer.add(number); // This is changing the buffer while iterating and causes duplicate entries
         }
     }
 
     public void flush() {
-        for (long number : _buffer) {
-            this.push(number);
-        }
+    	synchronized(_buffer) {
+	        for (long number : _buffer) {
+	            this.push(number);
+	        }
+	        _buffer.clear(); // overzealous clear, we should only clear what we added, but current implementation wouldn't know
+    	}
     }
 
     public Bucket checkoutAnyBucket() {
-        for (String key : _bucketKeys) {
-            Bucket bucket = _buckets.get(key);
-            if (bucket != null){
-                if (!bucket.isCheckedOut()) { return bucket.checkout(); }
-            }
-        }
+    	synchronized(this) {
+	        for (String key : _bucketKeys) {
+	            Bucket bucket = _buckets.get(key);
+	            if (bucket != null){
+	                if (!bucket.isCheckedOut() && !bucket.isSorted()) { return bucket.checkout(); }
+	            }
+	        }
+    	}
         return null; //all buckets are checked out
+        
     }
 
     public boolean isEverythingSorted() {
+        //System.out.println("Waiting"+_buffer.size());
         if (_buffer.size() > 0) { return false; }
 
         for (String key : _bucketKeys) {
             Bucket bucket = _buckets.get(key);
+            //System.out.println("Bucket"+bucket.getName()+" "+bucket.isSorted());
             if (!bucket.isSorted() || bucket.isCheckedOut()) { return false; }
         }
 
