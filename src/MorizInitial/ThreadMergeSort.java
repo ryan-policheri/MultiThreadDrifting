@@ -1,3 +1,4 @@
+package MorizInitial;
 import java.util.ArrayList;
 
 public class ThreadMergeSort<T extends Comparable<T>> implements Runnable  {
