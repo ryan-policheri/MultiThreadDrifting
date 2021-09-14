@@ -1,3 +1,4 @@
+package MorizInitial;
 import java.util.ArrayList;
 import java.util.Random;
 

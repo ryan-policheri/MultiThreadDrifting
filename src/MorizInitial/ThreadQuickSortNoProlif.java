@@ -1,3 +1,4 @@
+package MorizInitial;
 import java.util.ArrayList;
 
 public class ThreadQuickSortNoProlif<T extends Comparable<T>> implements Runnable {
