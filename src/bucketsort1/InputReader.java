@@ -36,6 +36,8 @@ public class InputReader implements Runnable {
                     workingItem = "";
                 }
             }
+
+            _sharedBucketManager.push(Long.parseLong(workingItem));
         } catch (IOException ex) { /*What to do?*/ }
     }
 
