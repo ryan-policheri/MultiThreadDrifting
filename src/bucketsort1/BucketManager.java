@@ -24,12 +24,7 @@ public class BucketManager {
             String name = bucket.getName();
             _buckets.put(name, bucket);
         }
-        if (!bucket.isCheckedOut()) {
-            bucket.addItem(number);
-        }
-        else {
-            //_buffer.add(number); // This is changing the buffer while iterating and causes duplicate entries
-        }
+        bucket.addItem(number); // since items are pushed to a local buffer we do not care about it being checked out
     }
 
     public void flush() {
@@ -37,19 +32,17 @@ public class BucketManager {
 	        for (long number : _buffer) {
 	            this.push(number);
 	        }
-	        _buffer.clear(); // overzealous clear, we should only clear what we added, but current implementation wouldn't know
+	        _buffer.clear(); // all numbers get added
     	}
     }
 
-    public Bucket checkoutAnyBucket() {
-    	synchronized(this) {
-	        for (String key : _bucketKeys) {
-	            Bucket bucket = _buckets.get(key);
-	            if (bucket != null){
-	                if (!bucket.isCheckedOut() && !bucket.isSorted()) { return bucket.checkout(); }
-	            }
-	        }
-    	}
+    public synchronized Bucket checkoutAnyBucket() {
+        for (String key : _bucketKeys) {
+            Bucket bucket = _buckets.get(key);
+            if (bucket != null){
+                if (!bucket.isCheckedOut() && !bucket.isSorted()) { return bucket.checkout(); }
+            }
+        }
         return null; //all buckets are checked out
         
     }
@@ -91,5 +84,15 @@ public class BucketManager {
         long bucketNumber = calculateBucketNumber(number);
         String name = "Bucket_" + bucketNumber;
         return name;
+    }
+    
+
+    public long bucketContentSum() {
+    	long sum = 0;
+    	for (String key : _bucketKeys) {
+            Bucket bucket = _buckets.get(key);
+            sum += bucket.size();
+        }
+    	return sum;
     }
 }

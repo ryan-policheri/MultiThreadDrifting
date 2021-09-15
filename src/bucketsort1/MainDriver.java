@@ -8,7 +8,7 @@ public class MainDriver {
     private static final char _delimiter = ',';
     private static final long _bucketLength = 50000000000000000L;
     private static final int _workerThreads = 4;
-    private static final int _inputLength = 10000000;
+    private static final int _inputLength = 10;
 
     public static void main(String[] args) throws FileNotFoundException, InterruptedException {
         String inputFile = args[0]; //This file would come generated. But generating it below for convenience
@@ -45,12 +45,13 @@ public class MainDriver {
             }
 
             if (readerDone) {
-                if (manager.isEverythingSorted()) { done = true; }
+                if (manager.isEverythingSorted()) {done = true; }
                 else { manager.flush(); }
                 
             }
         }
 
+        System.out.println("Program put " + manager.bucketContentSum() + " items into buckets");
         long endTime = System.nanoTime();
         long duration = endTime - startTime;
         long durationInSeconds = duration / 1000000000;
