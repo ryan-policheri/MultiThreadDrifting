@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.Map;
 
-public class BucketManager {
+public class BucketManager implements common.IHandleLong {
     private long _bucketLength;
     private Hashtable<String, Bucket> _buckets;
     private ArrayList<String> _bucketKeys;
@@ -17,6 +17,7 @@ public class BucketManager {
         _buffer = new ArrayList<Long>(); //if a bucket is checked out for sorting when received we can push the value here to process later so that we don't hold up I/O
     }
 
+    @Override
     public synchronized void push(long number) {
         Bucket bucket = findBucket(number);
         if (bucket == null) {
