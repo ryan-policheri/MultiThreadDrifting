@@ -10,6 +10,7 @@ public class Bucket {
     private boolean _isCheckedOut;
     private ArrayList<Long> _items;
     private ArrayList<Long> _buffer;
+    private BucketKey _key;
 
     public Bucket(String name, long lowerBound, long upperBound) {
         _name = name;
@@ -19,6 +20,7 @@ public class Bucket {
         _isSorted = false;
         _items = new ArrayList<Long>();
         _buffer = new ArrayList<Long>();
+        _key = new BucketKey(_name, _lowerBound);
     }
 
     public void addItem(long item) {
@@ -54,9 +56,8 @@ public class Bucket {
         else { return false; }
     }
 
-    public String getName() {
-        return _name;
-    }
+    public BucketKey getBucketKey() { return _key; }
+
     public int size() {
         return _items.size();
     }
