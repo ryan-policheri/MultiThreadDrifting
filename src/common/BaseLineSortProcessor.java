@@ -5,7 +5,7 @@ import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 
-public class BaseLineSortProcessor implements IHandleLong {
+public class BaseLineSortProcessor implements IHandleLong, ISortFile {
     private ArrayList<Long> _items;
 
     public BaseLineSortProcessor() {

@@ -73,4 +73,8 @@ public class Bucket {
     public void checkin() {
         _isCheckedOut = false;
     }
+
+    public ArrayList<Long> getItems(){
+        return _items;
+    }
 }

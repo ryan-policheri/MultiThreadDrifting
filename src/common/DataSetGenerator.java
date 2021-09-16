@@ -4,6 +4,7 @@ import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.Random;
 
 public class DataSetGenerator {
@@ -21,6 +22,7 @@ public class DataSetGenerator {
         }
 
         File file = new File(filePath);
+        if(file.exists()) { Files.delete(file.toPath()); }
         FileOutputStream fos = new FileOutputStream(file);
         DataOutputStream dos = new DataOutputStream(fos);
 

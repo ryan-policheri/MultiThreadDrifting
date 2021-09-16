@@ -1,6 +1,7 @@
 package common;
 
 import java.io.*;
+import java.util.ArrayList;
 
 public class DataLoader {
     public static void main(String[] args) throws IOException {
@@ -27,5 +28,26 @@ public class DataLoader {
         } catch (EOFException e) {
             fis.close();
         }
+    }
+
+    public static ArrayList<Long> readInput(String filePath) throws IOException {
+        ArrayList<Long> longs = new ArrayList<Long>();
+
+        File file = new File(filePath);
+        FileInputStream fis = new FileInputStream(file);
+        DataInputStream dis = new DataInputStream(fis);
+
+        try {
+            long index = 0;
+            while (true) {
+                long l = dis.readLong();
+                longs.add(l);
+                index += 1;
+            }
+        } catch (EOFException e) {
+            fis.close();
+        }
+
+        return longs;
     }
 }

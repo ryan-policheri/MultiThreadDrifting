@@ -9,5 +9,11 @@ public class Trial {
 
     public String SolutionName;
 
+    public String OutputFile;
+
+    public long RunTimeInNanoSeconds;
+
     public long RunTimeInSeconds;
+
+    public boolean ValidTrial;
 }

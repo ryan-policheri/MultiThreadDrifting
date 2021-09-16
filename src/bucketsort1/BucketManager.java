@@ -86,7 +86,6 @@ public class BucketManager implements common.IHandleLong {
         String name = "Bucket_" + bucketNumber;
         return name;
     }
-    
 
     public long bucketContentSum() {
     	long sum = 0;
@@ -95,5 +94,16 @@ public class BucketManager implements common.IHandleLong {
             sum += bucket.size();
         }
     	return sum;
+    }
+
+    public ArrayList<Long> buildResult() {
+        ArrayList<Long> results = new ArrayList<Long>();
+
+        for (String key : _bucketKeys) {
+            Bucket bucket = _buckets.get(key);
+            results.addAll(bucket.getItems());
+        }
+
+        return  results;
     }
 }

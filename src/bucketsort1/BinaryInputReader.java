@@ -17,7 +17,9 @@ public class BinaryInputReader implements Runnable {
     public void run() {
         try {
             DataLoader.readInput(_filePath, _sharedBucketManager);
-        } catch (IOException ex) { /*What to do?*/ }
+        } catch (IOException ex) {
+            ex.printStackTrace();/*What to do?*/
+        }
     }
 
     public void start() {
