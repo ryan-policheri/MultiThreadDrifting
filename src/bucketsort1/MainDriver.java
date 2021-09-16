@@ -16,8 +16,12 @@ public class MainDriver {
         inputFile = System.getProperty("user.dir") + "\\" + "array.bin";
         String outputFile = args[1];
 
-        try { DataSetGenerator.GenerateInputFile(inputFile, _inputLength); }
-        catch (IOException ex) { System.out.println("Error generating input file"+ex); return; }
+        try {
+            DataSetGenerator.GenerateInputFile(inputFile, _inputLength);
+        } catch (IOException ex) {
+            System.out.println("Error generating input file" + ex);
+            return;
+        }
 
         ArrayList<Trial> trials = new ArrayList<Trial>();
 
@@ -42,13 +46,15 @@ public class MainDriver {
         runProcessor(bucketSort1Processor, bucketSortTrial);
         trials.add(bucketSortTrial);
 
-        for(Trial trial : trials) {
-            BinaryFileToTextFile.ConvertBinaryLongsToTextLongs(trial.OutputFile);
+        for (Trial trial : trials) {
+            if (trial.ValidTrial == false) {
+                BinaryFileToTextFile.ConvertBinaryLongsToTextLongs(trial.OutputFile);
+            }
             System.out.println(trial.SolutionName + " took " + trial.RunTimeInSeconds + " seconds to execute. Solution is valid? " + trial.ValidTrial);
         }
     }
 
-    private static void runProcessor(ISortFile fileProcessor, Trial trial) throws IOException{
+    private static void runProcessor(ISortFile fileProcessor, Trial trial) throws IOException {
         long startTime = System.nanoTime();
         trial.OutputFile = fileProcessor.sortFile(trial.InputFile);
         long endTime = System.nanoTime();
