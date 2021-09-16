@@ -1,60 +1,69 @@
 package bucketsort1;
 
-import common.GenerateInputDriver;
+import common.*;
+
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.ArrayList;
 
 public class MainDriver {
-    private static final char _delimiter = ',';
-    private static final long _bucketLength = 50000000000000000L;
+    private static final long _bucketLength = 100;
     private static final int _workerThreads = 4;
-    private static final int _inputLength = 10;
+    private static final int _inputLength = 1000000;
 
-    public static void main(String[] args) throws FileNotFoundException, InterruptedException {
+    public static void main(String[] args) throws FileNotFoundException, IOException {
         String inputFile = args[0]; //This file would come generated. But generating it below for convenience
+        inputFile = System.getProperty("user.dir") + "\\" + "array.bin";
         String outputFile = args[1];
 
-        try { inputFile = GenerateInputDriver.GenerateInputFile(inputFile, _inputLength); }
-        catch (IOException ex) { System.out.println("Error generating input file"+ex); return; }
+        try {
+            DataSetGenerator.GenerateInputFile(inputFile, _inputLength);
+        } catch (IOException ex) {
+            System.out.println("Error generating input file" + ex);
+            return;
+        }
 
+        ArrayList<Trial> trials = new ArrayList<Trial>();
+
+        Trial baseLineTrial = new Trial();
+        baseLineTrial.InputFile = inputFile;
+        baseLineTrial.InputSize = _inputLength;
+        baseLineTrial.SolutionName = "Baseline Processor";
+
+        BaseLineSortProcessor baselineProcessor = new BaseLineSortProcessor();
+        runProcessor(baselineProcessor, baseLineTrial);
+        baseLineTrial.VerificationFile = baseLineTrial.OutputFile;
+        baseLineTrial.ValidTrial = true;
+        trials.add(baseLineTrial);
+
+        Trial bucketSortTrial = new Trial();
+        bucketSortTrial.InputFile = inputFile;
+        bucketSortTrial.InputSize = _inputLength;
+        bucketSortTrial.SolutionName = "Bucket Sort Processor";
+        bucketSortTrial.VerificationFile = baseLineTrial.VerificationFile;
+
+        BucketSort1Processor bucketSort1Processor = new BucketSort1Processor(_bucketLength, _workerThreads);
+        runProcessor(bucketSort1Processor, bucketSortTrial);
+        trials.add(bucketSortTrial);
+
+        for (Trial trial : trials) {
+            if (trial.ValidTrial == false) {
+                BinaryFileToTextFile.ConvertBinaryLongsToTextLongs(trial.OutputFile);
+            }
+            System.out.println(trial.SolutionName + " took " + trial.RunTimeInSeconds + " seconds to execute. Solution is valid? " + trial.ValidTrial);
+        }
+    }
+
+    private static void runProcessor(ISortFile fileProcessor, Trial trial) throws IOException {
         long startTime = System.nanoTime();
-
-        BucketManager manager = new BucketManager(_bucketLength);
-        InputReader reader = new InputReader(inputFile, _delimiter, manager);
-
-        SortWorker[] workers = new SortWorker[_workerThreads];
-        for (int i = 0; i < _workerThreads; i++) {
-            workers[i] = new SortWorker(manager);
-        }
-
-        reader.start();
-        for (SortWorker worker : workers) {
-            worker.start();
-        }
-
-        boolean done = false;
-
-        while (!done) {
-            boolean readerDone = !reader.isRunning();
-
-            for (int i = 0; i < _workerThreads; i++) {
-                if (!workers[i].isRunning()) {
-                    workers[i] = new SortWorker(manager); //worker completed, make a new one
-                    workers[i].start();
-                }
-            }
-
-            if (readerDone) {
-                if (manager.isEverythingSorted()) {done = true; }
-                else { manager.flush(); }
-                
-            }
-        }
-
-        System.out.println("Program put " + manager.bucketContentSum() + " items into buckets");
+        trial.OutputFile = fileProcessor.sortFile(trial.InputFile);
         long endTime = System.nanoTime();
         long duration = endTime - startTime;
         long durationInSeconds = duration / 1000000000;
-        System.out.println("Program took " + durationInSeconds + " to execute");
+        trial.RunTimeInNanoSeconds = duration;
+        trial.RunTimeInSeconds = durationInSeconds;
+
+        TrialValidator validator = new TrialValidator();
+        validator.validateTrial(trial);
     }
 }

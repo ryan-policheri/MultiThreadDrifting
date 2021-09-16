@@ -1,22 +1,24 @@
 package bucketsort1;
 
-import bucketsort1.BucketManager;
+import common.DataLoader;
+import java.io.IOException;
 
-public class SortWorker implements Runnable {
+public class BinaryInputReader implements Runnable {
+    private String _filePath;
     private BucketManager _sharedBucketManager;
     private Thread _thread;
 
-    public SortWorker(BucketManager bucketManager) {
+    public BinaryInputReader(String filePath, BucketManager bucketManager) {
+        _filePath = filePath;
         _sharedBucketManager = bucketManager;
     }
 
     @Override
     public void run() {
-        Bucket bucket = _sharedBucketManager.checkoutAnyBucket();
-        if (bucket != null) {
-        	bucket.addBuffer();
-            bucket.sort();
-            bucket.checkin();
+        try {
+            DataLoader.readInput(_filePath, _sharedBucketManager);
+        } catch (IOException ex) {
+            ex.printStackTrace();/*What to do?*/
         }
     }
 

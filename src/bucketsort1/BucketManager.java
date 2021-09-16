@@ -1,28 +1,30 @@
 package bucketsort1;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Hashtable;
-import java.util.Map;
 
-public class BucketManager {
+public class BucketManager implements common.IHandleLong {
     private long _bucketLength;
-    private Hashtable<String, Bucket> _buckets;
-    private ArrayList<String> _bucketKeys;
+    private Hashtable<BucketKey, Bucket> _buckets;
+    private ArrayList<BucketKey> _bucketKeys;
     private ArrayList<Long> _buffer;
 
     public BucketManager(long bucketLength) {
         _bucketLength = bucketLength;
-        _buckets = new Hashtable<String, Bucket>();
-        _bucketKeys = new ArrayList<String>();
+        _buckets = new Hashtable<BucketKey, Bucket>();
+        _bucketKeys = new ArrayList<BucketKey>();
         _buffer = new ArrayList<Long>(); //if a bucket is checked out for sorting when received we can push the value here to process later so that we don't hold up I/O
     }
 
+    @Override
     public synchronized void push(long number) {
         Bucket bucket = findBucket(number);
         if (bucket == null) {
             bucket = createBucket(number);
-            String name = bucket.getName();
-            _buckets.put(name, bucket);
+            BucketKey key = bucket.getBucketKey();
+            _bucketKeys.add(key);
+            _buckets.put(key, bucket);
         }
         bucket.addItem(number); // since items are pushed to a local buffer we do not care about it being checked out
     }
@@ -37,7 +39,7 @@ public class BucketManager {
     }
 
     public synchronized Bucket checkoutAnyBucket() {
-        for (String key : _bucketKeys) {
+        for (BucketKey key : _bucketKeys) {
             Bucket bucket = _buckets.get(key);
             if (bucket != null){
                 if (!bucket.isCheckedOut() && !bucket.isSorted()) { return bucket.checkout(); }
@@ -51,7 +53,7 @@ public class BucketManager {
         //System.out.println("Waiting"+_buffer.size());
         if (_buffer.size() > 0) { return false; }
 
-        for (String key : _bucketKeys) {
+        for (BucketKey key : _bucketKeys) {
             Bucket bucket = _buckets.get(key);
             //System.out.println("Bucket"+bucket.getName()+" "+bucket.isSorted());
             if (!bucket.isSorted() || bucket.isCheckedOut()) { return false; }
@@ -62,8 +64,12 @@ public class BucketManager {
 
     private Bucket findBucket(long number) {
         String bucketName = calculateBucketName(number);
-        Bucket bucket = _buckets.get(bucketName);
-        return bucket;
+        for(BucketKey key : _bucketKeys) {
+            if(key.Name.equals(bucketName)) {
+                return _buckets.get(key);
+            }
+        }
+        return null;
     }
 
     private Bucket createBucket(long number) {
@@ -71,7 +77,6 @@ public class BucketManager {
         String bucketName = calculateBucketName(number);
         long lowerBound = bucketNumber * _bucketLength;
         long upperBound = (lowerBound + _bucketLength) - 1;
-        _bucketKeys.add(bucketName);
         return new Bucket(bucketName, lowerBound, upperBound);
     }
 
@@ -85,14 +90,31 @@ public class BucketManager {
         String name = "Bucket_" + bucketNumber;
         return name;
     }
-    
 
     public long bucketContentSum() {
     	long sum = 0;
-    	for (String key : _bucketKeys) {
+    	for (BucketKey key : _bucketKeys) {
             Bucket bucket = _buckets.get(key);
             sum += bucket.size();
         }
     	return sum;
+    }
+
+    public ArrayList<Long> buildResult() {
+        ArrayList<Long> results = new ArrayList<Long>();
+        _bucketKeys.sort(new Comparator<BucketKey>() {
+            @Override
+            public int compare(BucketKey o1, BucketKey o2) {
+                if(o1.LowerBound == o2.LowerBound) { return 0;}
+                return o1.LowerBound < o2.LowerBound ? -1 : 1;
+            }
+        });
+
+        for (BucketKey key : _bucketKeys) {
+            Bucket bucket = _buckets.get(key);
+            results.addAll(bucket.getItems());
+        }
+
+        return  results;
     }
 }
