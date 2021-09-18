@@ -15,7 +15,7 @@ public class MapReduceProcessor implements ISortFile {
 
     public MapReduceProcessor(int numberOfThreads) {
         _numberOfThreads = numberOfThreads;
-        _chunkMultiplier = 2;
+        _chunkMultiplier = 250000;
     }
 
     @Override
@@ -54,16 +54,21 @@ public class MapReduceProcessor implements ISortFile {
                         if (chunk != null) {
                             reduceWorkers[i] = new ReduceWorker(chunk);
                             reduceWorkers[i].start();
+                        } else if(reducedRecordsCollection.size() >= 2) {
+                            ReducedRecord[] set1 = reducedRecordsCollection.remove(0);
+                            ReducedRecord[] set2 = reducedRecordsCollection.remove(0);
+                            reduceWorkers[i] = new ReduceWorker(set1, set2);
+                            reduceWorkers[i].start();
                         }
                     } else if (worker.isRunning() == false) {
-                        ReducedRecord[] records = worker.get_reducedRecords();
+                        ReducedRecord[] records = worker.getReducedRecords();
                         reducedRecordsCollection.add(records);
                         reduceWorkers[i] = null;
                     }
                 }
 
                 //if all workers are null done with loop
-                if (reader == null) {
+                if (reader == null && reducedRecordsCollection.size() == 1) {
                     done = true;
                     for (ReduceWorker worker : reduceWorkers) {
                         if (worker != null) { done = false; }
@@ -71,30 +76,7 @@ public class MapReduceProcessor implements ISortFile {
                 }
             }
 
-            ArrayList<Queue<ReducedRecord>> recordSets = new ArrayList<Queue<ReducedRecord>>();
-            for(var set : reducedRecordsCollection) {
-                recordSets.add(new LinkedList<>(Arrays.asList(set)));
-            }
-
-            ArrayList<ReducedRecord> finalSortedRecords = new ArrayList<ReducedRecord>();
-            done = false;
-            while (!done) {
-                done = true;
-                Queue<ReducedRecord> queueWithLowestValue = null;
-                for (var records : recordSets) {
-                    if (records.size() != 0) {
-                        done = false;
-                        if (queueWithLowestValue == null || records.peek().Number < queueWithLowestValue.peek().Number) {
-                            queueWithLowestValue = records;
-                        }
-                    }
-                }
-                if (queueWithLowestValue != null) {
-                    finalSortedRecords.add(queueWithLowestValue.poll());
-                }
-            }
-
-            ReducedRecordWriter.WriteRecords(outputFile, finalSortedRecords);
+            ReducedRecordWriter.WriteRecords(outputFile, reducedRecordsCollection.get(0));
             return outputFile;
         }
     }

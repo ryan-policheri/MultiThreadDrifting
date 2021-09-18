@@ -35,7 +35,7 @@ public class ReduceWorker extends Worker {
         }
     }
 
-    public ReducedRecord[] get_reducedRecords() throws InvalidObjectException { //Should only be called when thread is finished
+    public ReducedRecord[] getReducedRecords() throws InvalidObjectException { //Should only be called when thread is finished
         if (this.isRunning()) throw new InvalidObjectException("Thread is running");
         return _reducedRecords;
     }
