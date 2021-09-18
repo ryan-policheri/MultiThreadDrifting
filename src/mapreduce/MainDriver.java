@@ -5,7 +5,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 public class MainDriver {
-    private static final int _workerThreads = 1;
+    private static final int _workerThreads = 8;
     private static final int _inputLength = 1000000;
 
 
@@ -34,15 +34,15 @@ public class MainDriver {
         baseLineTrial.ValidTrial = true;
         trials.add(baseLineTrial);
 
-        Trial bucketSortTrial = new Trial();
-        bucketSortTrial.InputFile = inputFile;
-        bucketSortTrial.InputSize = _inputLength;
-        bucketSortTrial.SolutionName = "Map Reduce Processor";
-        bucketSortTrial.VerificationFile = baseLineTrial.VerificationFile;
+        Trial mapReduceTrial = new Trial();
+        mapReduceTrial.InputFile = inputFile;
+        mapReduceTrial.InputSize = _inputLength;
+        mapReduceTrial.SolutionName = "Map Reduce Processor";
+        mapReduceTrial.VerificationFile = baseLineTrial.VerificationFile;
 
         MapReduceProcessor mapReduceProcessor = new MapReduceProcessor(_workerThreads);
-        runProcessor(mapReduceProcessor, bucketSortTrial);
-        trials.add(bucketSortTrial);
+        runProcessor(mapReduceProcessor, mapReduceTrial);
+        trials.add(mapReduceTrial);
 
         for (Trial trial : trials) {
             if (trial.ValidTrial == false) {

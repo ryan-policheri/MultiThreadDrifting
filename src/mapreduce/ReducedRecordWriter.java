@@ -1,6 +1,7 @@
 package mapreduce;
 
 import java.io.*;
+import java.util.ArrayList;
 
 public class ReducedRecordWriter {
     public static void WriteRecords(String filePath, ReducedRecord[] records) throws IOException {
@@ -16,5 +17,11 @@ public class ReducedRecordWriter {
 
         dos.close();
         fos.close();
+    }
+
+    public static void WriteRecords(String filePath, ArrayList<ReducedRecord> reducedRecords) throws IOException  {
+        ReducedRecord[] records = new ReducedRecord[reducedRecords.size()];
+        reducedRecords.toArray(records);
+        WriteRecords(filePath, records);
     }
 }

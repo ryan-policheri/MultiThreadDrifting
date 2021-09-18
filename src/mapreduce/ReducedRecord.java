@@ -6,6 +6,11 @@ public class ReducedRecord implements Comparable<ReducedRecord> {
         Count = 1;
     }
 
+    public ReducedRecord(long number, int count){
+        Number = number;
+        Count = count;
+    }
+
     public long Number;
     public int Count;
 

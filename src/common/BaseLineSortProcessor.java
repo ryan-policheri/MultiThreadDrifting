@@ -24,6 +24,11 @@ public class BaseLineSortProcessor implements IHandleLong, ISortFile {
         _items.add(number);
     }
 
+    @Override
+    public void donePushingLongs() {
+        //Do nothing
+    }
+
     private String calculateOutputFilePath(String inputFilePath) {
         File file = new File(inputFilePath);
         String directory = file.getParent();

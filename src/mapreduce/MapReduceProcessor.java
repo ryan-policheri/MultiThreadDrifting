@@ -1,31 +1,101 @@
 package mapreduce;
 
 import common.DataLoader;
+import common.GenericInputWorker;
 import common.ISortFile;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
-import java.util.ArrayList;
+import java.util.*;
 
 public class MapReduceProcessor implements ISortFile {
     private int _numberOfThreads;
+    private int _chunkMultiplier;
 
-    public MapReduceProcessor(int numberOfThreads){
+    public MapReduceProcessor(int numberOfThreads) {
         _numberOfThreads = numberOfThreads;
+        _chunkMultiplier = 2;
     }
 
     @Override
     public String sortFile(String inputFilePath) throws IOException {
+        String outputFile = calculateOutputFilePath(inputFilePath);
+
         if (_numberOfThreads == 1) {
             ArrayList<Long> longs = DataLoader.readInput(inputFilePath);
             Reducer reducer = new Reducer(longs);
             ReducedRecord[] reducedRecords = reducer.ReduceAndSort();
-            String outputFile = calculateOutputFilePath(inputFilePath);
             ReducedRecordWriter.WriteRecords(outputFile, reducedRecords);
             return outputFile;
         } else {
-            return null;
+            File file = new File(inputFilePath);
+            long length = file.length();
+            int chunks = _numberOfThreads * _chunkMultiplier;
+            MapReduceDataManager reduceDataManager = new MapReduceDataManager(length, chunks);
+
+            GenericInputWorker reader = new GenericInputWorker(inputFilePath, reduceDataManager);
+            reader.start();
+
+            ReduceWorker[] reduceWorkers = new ReduceWorker[_numberOfThreads];
+
+            ArrayList<ReducedRecord[]> reducedRecordsCollection = new ArrayList<ReducedRecord[]>();
+
+            boolean done = false;
+            while (!done) {
+                int i = 1;
+                if (reader != null && reader.isRunning() == false) { reader = null; }
+                if (reader == null) { i = 0; } //Reader is done, let another worker in
+
+                for (i = i; i < _numberOfThreads; i++) {
+                    ReduceWorker worker = reduceWorkers[i];
+                    if (worker == null) {
+                        ArrayList<Long> chunk = reduceDataManager.takeChunk();
+                        if (chunk != null) {
+                            reduceWorkers[i] = new ReduceWorker(chunk);
+                            reduceWorkers[i].start();
+                        }
+                    } else if (worker.isRunning() == false) {
+                        ReducedRecord[] records = worker.get_reducedRecords();
+                        reducedRecordsCollection.add(records);
+                        reduceWorkers[i] = null;
+                    }
+                }
+
+                //if all workers are null done with loop
+                if (reader == null) {
+                    done = true;
+                    for (ReduceWorker worker : reduceWorkers) {
+                        if (worker != null) { done = false; }
+                    }
+                }
+            }
+
+            ArrayList<Queue<ReducedRecord>> recordSets = new ArrayList<Queue<ReducedRecord>>();
+            for(var set : reducedRecordsCollection) {
+                recordSets.add(new LinkedList<>(Arrays.asList(set)));
+            }
+
+            ArrayList<ReducedRecord> finalSortedRecords = new ArrayList<ReducedRecord>();
+            done = false;
+            while (!done) {
+                done = true;
+                Queue<ReducedRecord> queueWithLowestValue = null;
+                for (var records : recordSets) {
+                    if (records.size() != 0) {
+                        done = false;
+                        if (queueWithLowestValue == null || records.peek().Number < queueWithLowestValue.peek().Number) {
+                            queueWithLowestValue = records;
+                        }
+                    }
+                }
+                if (queueWithLowestValue != null) {
+                    finalSortedRecords.add(queueWithLowestValue.poll());
+                }
+            }
+
+            ReducedRecordWriter.WriteRecords(outputFile, finalSortedRecords);
+            return outputFile;
         }
     }
 
