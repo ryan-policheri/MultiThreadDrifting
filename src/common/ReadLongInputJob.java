@@ -2,11 +2,11 @@ package common;
 
 import java.io.IOException;
 
-public class GenericInputWorker extends Worker {
-    String _filePath;
-    IHandleLong _longHandler;
+public class ReadLongInputJob implements Runnable {
+    private final String _filePath;
+    private final IHandleLong _longHandler;
 
-    public GenericInputWorker(String filePath, IHandleLong longHandler) {
+    public ReadLongInputJob(String filePath, IHandleLong longHandler) {
         _filePath = filePath;
         _longHandler = longHandler;
     }

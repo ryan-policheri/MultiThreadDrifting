@@ -8,7 +8,6 @@ public class MainDriver {
     private static final int _workerThreads = 16;
     private static final int _inputLength = 1000000;
 
-
     public static void main(String[] args) throws IOException {
         String inputFile = args[0]; //This file would come generated. But generating it below for convenience
         inputFile = System.getProperty("user.dir") + "\\" + "array.bin";
@@ -48,7 +47,8 @@ public class MainDriver {
             if (trial.ValidTrial == false) {
                 BinaryFileToTextFile.ConvertBinaryLongsToTextLongs(trial.OutputFile);
             }
-            System.out.println(trial.SolutionName + " took " + trial.RunTimeInSeconds + " seconds to execute. Solution is valid? " + trial.ValidTrial);
+            System.out.println(trial.SolutionName + " took " + trial.RunTimeInSeconds + " seconds to execute " +
+                    "(" + trial.RunTimeInNanoSeconds + " nanoseconds)." + "Solution is valid? " + trial.ValidTrial);
         }
     }
 

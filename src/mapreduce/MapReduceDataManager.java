@@ -7,8 +7,7 @@ import java.util.Queue;
 import common.IHandleLong;
 
 public class MapReduceDataManager implements IHandleLong {
-    private final int _bytesPerLong = 8;
-    private final long _numberOfLongs;
+    private final long _longCount;
     private final int _chunkCount;
     private final long _delimitEveryXLongs;
 
@@ -16,29 +15,25 @@ public class MapReduceDataManager implements IHandleLong {
     private int _currentChunkNumber; //only used for one job (input reading)
     private ArrayList<Long> _currentLongChunkValues; //only used for one job (input reading)
     private Queue<ArrayList<Long>> _longChunks; //used across multiple jobs (reading job adds chunks, reduce job takes chunks)
-    private boolean _donePushingLongs; //used across multiple jobs (input reader job writes to it, main thread reads from it)
 
-    private ArrayList<ReducedRecord[]> _reducedChunks; //used across multiple jobs (multiple reduce jobs and take and push chunks)
-    private int _pairIdCounter; //used across multiple jobs (multiple reduce jobs and take and push chunks)
-    private ArrayList<Integer> _reducedPairsInProgress; //used across multiple jobs (multiple reduce jobs and take and push chunks)
+    private ArrayList<ReductionResult> _reducedResults; //used across multiple jobs (multiple reduce jobs and take and push chunks)
+    private int _reducedNumbersWeightedCount; //used across multiple jobs (multiple reduce jobs and take and push chunks)
 
     private Object _longManagmentLock; //processes that involve working with the initial long reading should sync on this lock
     private Object _reducedManagementLock; //processes that involve working with reduced chunks should sync on this lock
 
-    public MapReduceDataManager(long fileLengthInBytes, int chunkCount) {
-        _numberOfLongs = (fileLengthInBytes / _bytesPerLong);
+    public MapReduceDataManager(long longCount, int chunkCount) {
+        _longCount = longCount;
         _chunkCount = chunkCount;
-        _delimitEveryXLongs = _numberOfLongs / _chunkCount;
+        _delimitEveryXLongs = _longCount / _chunkCount;
 
         _itemsInChunk = 0;
         _currentChunkNumber = 1;
         _currentLongChunkValues = new ArrayList<Long>();
         _longChunks = new LinkedList<ArrayList<Long>>();
-        _donePushingLongs = false;
 
-        _reducedChunks = new ArrayList<>();
-        _pairIdCounter = 0;
-        _reducedPairsInProgress = new ArrayList<>();
+        _reducedResults = new ArrayList<>();
+        _reducedNumbersWeightedCount = 0;
 
         _longManagmentLock = new Object();
         _reducedManagementLock = new Object();
@@ -66,7 +61,6 @@ public class MapReduceDataManager implements IHandleLong {
     @Override
     public void donePushingLongs() {
         synchronized (_longManagmentLock) {
-            _donePushingLongs = true;
             _longChunks.add(_currentLongChunkValues);
         }
     }
@@ -77,37 +71,26 @@ public class MapReduceDataManager implements IHandleLong {
         }
     }
 
-    public void pushReducedChunk(ReducedRecord[] records) {
+    public void pushReducedChunk(ReductionResult result) {
         synchronized (_reducedManagementLock) {
-            _reducedChunks.add(records);
-        }
-    }
-
-    public void pushReducedChunk(ReducedRecord[] records, int pairId) {
-        synchronized (_reducedManagementLock) {
-            _reducedChunks.add(records);
-            _reducedPairsInProgress.removeIf(x -> x == pairId);
+            _reducedNumbersWeightedCount += result.RecordWeightedLength;
+            _reducedResults.add(result);
         }
     }
 
     public boolean hasReducedAllData() {
-        synchronized (_longManagmentLock) {
-            if (_donePushingLongs == false || _longChunks.size() != 0)  { return false; }
-        }
         synchronized (_reducedManagementLock) {
-            if (_reducedChunks.size() != 1 || _reducedPairsInProgress.size() != 0 || calculateWieghtedCount() != _numberOfLongs) { return false; }
+            return (_reducedResults.size() == 1 && _reducedNumbersWeightedCount == _longCount);
         }
-        return true;
     }
 
-    public ReducedRecordPair tryPopReducedRecordPair() {
+    public ReductionResultPair tryPopReducedRecordPair() {
         synchronized (_reducedManagementLock) {
-            if (_reducedChunks.size() >= 2) {
-                ReducedRecordPair pair = new ReducedRecordPair();
-                pair.PairId = ++_pairIdCounter;
-                _reducedPairsInProgress.add(_pairIdCounter);
-                pair.Set1 = _reducedChunks.remove(0);
-                pair.Set2 = _reducedChunks.remove(0);
+            if (_reducedResults.size() >= 2) {
+                ReductionResultPair pair = new ReductionResultPair();
+                pair.Result1 = _reducedResults.remove(0);
+                pair.Result2 = _reducedResults.remove(0);
+                _reducedNumbersWeightedCount -= pair.calculateWeightedLength();
                 return pair;
             } else {
                 return null;
@@ -117,16 +100,7 @@ public class MapReduceDataManager implements IHandleLong {
 
     public ReducedRecord[] getFinalResult() {
         synchronized (_reducedManagementLock) {
-            int count = calculateWieghtedCount();
-            return _reducedChunks.get(0);
+            return _reducedResults.get(0).Records;
         }
-    }
-
-    private int calculateWieghtedCount() {
-        int count = 0;
-        for (ReducedRecord record : _reducedChunks.get(0)) {
-            count = count + record.Count;
-        }
-        return count;
     }
 }

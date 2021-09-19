@@ -4,47 +4,49 @@ import java.util.*;
 
 public class Reducer {
     private ArrayList<Long> _longs;
-
-    ReducedRecord[] _arrayOne;
-    ReducedRecord[] _arrayTwo;
+    private ReductionResultPair _pair;
 
     public Reducer(ArrayList<Long> longs){
         if (longs == null) throw new IllegalArgumentException("Value null");
         _longs = longs;
     }
 
-    public Reducer(ReducedRecord[] arrayOne, ReducedRecord[] arrayTwo){
-        if (arrayOne == null || arrayTwo == null) throw new IllegalArgumentException("Values null");
-        _arrayOne = arrayOne;
-        _arrayTwo = arrayTwo;
+    public Reducer(ReductionResultPair pair){
+        if (pair == null) throw new IllegalArgumentException("Value null");
+        _pair = pair;
     }
 
-
-    public ReducedRecord[] Reduce() {
+    public ReductionResult Reduce() {
+        int weigthedLength = 0;
         Hashtable<Long, ReducedRecord> hashtable = new Hashtable<Long, ReducedRecord>();
 
         if (_longs != null) {
+            weigthedLength = _longs.size();
             for (Long number : _longs) {
                 placeInHashTable(hashtable, number, 1);
             }
         }
-        else { //arrayOne and arrayTwo not null. Enforced in constructor
-            for (ReducedRecord record : _arrayOne) {
+        else { //pair not null
+            weigthedLength = _pair.calculateWeightedLength();
+            for (ReducedRecord record : _pair.Result1.Records) {
                 hashtable.put(record.Number, record);
             }
-            for (ReducedRecord record : _arrayTwo) {
+            for (ReducedRecord record : _pair.Result2.Records) {
                 placeInHashTable(hashtable, record.Number, record.Count);
             }
         }
 
         ReducedRecord[] recordArray = convertHashTableToArray(hashtable);
-        return recordArray;
+        ReductionResult result = new ReductionResult();
+        result.Records = recordArray;
+        result.RecordWeightedLength = weigthedLength;
+        return result;
     }
 
-    public ReducedRecord[] ReduceAndSort() {
-        ReducedRecord[] records = Reduce();
-        Arrays.sort(records);
-        return records;
+    public ReductionResult ReduceAndSort() {
+        ReductionResult result = Reduce();
+        Arrays.sort(result.Records);
+        return result;
     }
 
     private void placeInHashTable(Hashtable<Long, ReducedRecord> hashtable, Long number, int incrementBy) {
