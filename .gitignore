@@ -1,4 +1,5 @@
 bin/
 bin/TestThreadSort.class
 *.class
-*.csv
+*.bin
+/.idea/
