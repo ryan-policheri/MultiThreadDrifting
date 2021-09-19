@@ -1,42 +1,37 @@
 package mapreduce;
 
 import common.Worker;
-import java.io.InvalidObjectException;
 import java.util.ArrayList;
 
 public class ReduceWorker extends Worker {
-    ArrayList<Long> _longs;
+    private MapReduceDataManager _manager;
 
-    ReducedRecord[] _arrayOne;
-    ReducedRecord[] _arrayTwo;
+    private ArrayList<Long> _longs;
+    private ReducedRecordPair _pair;
 
-    ReducedRecord[] _reducedRecords;
-
-    public ReduceWorker(ArrayList<Long> longs) {
+    public ReduceWorker(MapReduceDataManager manager, ArrayList<Long> longs) {
+        _manager = manager;
         if (longs == null) throw new IllegalArgumentException("Value null");
         _longs = longs;
     }
 
-    public ReduceWorker(ReducedRecord[] arrayOne, ReducedRecord[] arrayTwo){
-        if (arrayOne == null || arrayTwo == null) throw new IllegalArgumentException("Values null");
-        _arrayOne = arrayOne;
-        _arrayTwo = arrayTwo;
+    public ReduceWorker(MapReduceDataManager manager, ReducedRecordPair pair){
+        _manager = manager;
+        if (pair == null) throw new IllegalArgumentException("Values null");
+        _pair = pair;
     }
 
     @Override
     public void run() {
         if (_longs != null) {
             Reducer reducer = new Reducer(_longs);
-            _reducedRecords = reducer.ReduceAndSort();
+            ReducedRecord[] reducedRecords = reducer.ReduceAndSort();
+            _manager.pushReducedChunk(reducedRecords);
         }
         else { //arrayOne and arrayTwo are not null. Enforced in constructor
-            Reducer reducer = new Reducer(_arrayOne, _arrayTwo);
-            _reducedRecords = reducer.ReduceAndSort();
+            Reducer reducer = new Reducer(_pair.Set1, _pair.Set2);
+            ReducedRecord[] reducedRecords = reducer.ReduceAndSort();
+            _manager.pushReducedChunk(reducedRecords, _pair.PairId);
         }
-    }
-
-    public ReducedRecord[] getReducedRecords() throws InvalidObjectException { //Should only be called when thread is finished
-        if (this.isRunning()) throw new InvalidObjectException("Thread is running");
-        return _reducedRecords;
     }
 }

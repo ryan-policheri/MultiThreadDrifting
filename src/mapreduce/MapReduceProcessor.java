@@ -8,6 +8,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.concurrent.*;
 
 public class MapReduceProcessor implements ISortFile {
     private int _numberOfThreads;
@@ -15,7 +16,7 @@ public class MapReduceProcessor implements ISortFile {
 
     public MapReduceProcessor(int numberOfThreads) {
         _numberOfThreads = numberOfThreads;
-        _chunkMultiplier = 250000;
+        _chunkMultiplier = 2;
     }
 
     @Override
@@ -34,49 +35,32 @@ public class MapReduceProcessor implements ISortFile {
             int chunks = _numberOfThreads * _chunkMultiplier;
             MapReduceDataManager reduceDataManager = new MapReduceDataManager(length, chunks);
 
+            BlockingQueue<Runnable> workQueue = new ArrayBlockingQueue<Runnable>(1024);
+            ThreadPoolExecutor pool = new ThreadPoolExecutor(_numberOfThreads, _numberOfThreads, 10, TimeUnit.SECONDS, workQueue);
+
             GenericInputWorker reader = new GenericInputWorker(inputFilePath, reduceDataManager);
-            reader.start();
-
-            ReduceWorker[] reduceWorkers = new ReduceWorker[_numberOfThreads];
-
-            ArrayList<ReducedRecord[]> reducedRecordsCollection = new ArrayList<ReducedRecord[]>();
+            pool.execute(reader);
 
             boolean done = false;
             while (!done) {
-                int i = 1;
-                if (reader != null && reader.isRunning() == false) { reader = null; }
-                if (reader == null) { i = 0; } //Reader is done, let another worker in
+                if (reduceDataManager.hasReducedAllData()) { done = true; }
+                else {
+                    ArrayList<Long> chunk = reduceDataManager.takeLongChunk();
 
-                for (i = i; i < _numberOfThreads; i++) {
-                    ReduceWorker worker = reduceWorkers[i];
-                    if (worker == null) {
-                        ArrayList<Long> chunk = reduceDataManager.takeChunk();
-                        if (chunk != null) {
-                            reduceWorkers[i] = new ReduceWorker(chunk);
-                            reduceWorkers[i].start();
-                        } else if(reducedRecordsCollection.size() >= 2) {
-                            ReducedRecord[] set1 = reducedRecordsCollection.remove(0);
-                            ReducedRecord[] set2 = reducedRecordsCollection.remove(0);
-                            reduceWorkers[i] = new ReduceWorker(set1, set2);
-                            reduceWorkers[i].start();
+                    if (chunk != null) {
+                        ReduceWorker worker = new ReduceWorker(reduceDataManager, chunk);
+                        pool.execute(worker);
+                    } else {
+                        ReducedRecordPair pair = reduceDataManager.tryPopReducedRecordPair();
+                        if (pair != null) {
+                            ReduceWorker worker = new ReduceWorker(reduceDataManager, pair);
+                            pool.execute(worker);
                         }
-                    } else if (worker.isRunning() == false) {
-                        ReducedRecord[] records = worker.getReducedRecords();
-                        reducedRecordsCollection.add(records);
-                        reduceWorkers[i] = null;
-                    }
-                }
-
-                //if all workers are null done with loop
-                if (reader == null && reducedRecordsCollection.size() == 1) {
-                    done = true;
-                    for (ReduceWorker worker : reduceWorkers) {
-                        if (worker != null) { done = false; }
                     }
                 }
             }
 
-            ReducedRecordWriter.WriteRecords(outputFile, reducedRecordsCollection.get(0));
+            ReducedRecordWriter.WriteRecords(outputFile, reduceDataManager.getFinalResult());
             return outputFile;
         }
     }
