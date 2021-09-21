@@ -28,6 +28,8 @@ public class DataLoader {
         } catch (EOFException e) {
             fis.close();
         }
+
+        handler.donePushingLongs();
     }
 
     public static ArrayList<Long> readInput(String filePath) throws IOException {

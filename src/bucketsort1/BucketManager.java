@@ -29,6 +29,10 @@ public class BucketManager implements common.IHandleLong {
         bucket.addItem(number); // since items are pushed to a local buffer we do not care about it being checked out
     }
 
+    public void donePushingLongs() {
+        //Do nothing
+    }
+
     public void flush() {
     	synchronized(_buffer) {
 	        for (long number : _buffer) {
