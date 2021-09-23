@@ -1,23 +1,23 @@
 package quicksort;
 
-import java.util.concurrent.CountDownLatch;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.Arrays;
 
-public class QuickSortRunnable implements Runnable{
-    private final long[] array;
+public class QuickSortRunnable implements Runnable {
     private final int startIndex;
     private final int endIndex;
-    private final CountDownLatch countDownLatch;
 
-    public QuickSortRunnable (long[] array, int startIndex, int endIndex, CountDownLatch countDownLatch) {
-        this.array = array;
+    public QuickSortRunnable(int startIndex, int endIndex) {
         this.startIndex = startIndex;
-        this. endIndex = endIndex;
-        this.countDownLatch = countDownLatch;
+        this.endIndex = endIndex;
     }
 
+    @Override
     public void run() {
         quickSort(this.startIndex, this.endIndex);
-        countDownLatch.countDown();
+        int[] indices = {startIndex, endIndex};
+        Driver.mergeableChunkQueue.add(indices);
     }
 
     private void quickSort(int startIndex, int endIndex) {
@@ -30,12 +30,12 @@ public class QuickSortRunnable implements Runnable{
     }
 
     private int partition(int startIndex, int endIndex) {
-        long pivot = this.array[endIndex];
+        long pivot = Driver.longs[endIndex];
 
         int i = startIndex - 1;
 
         for (int j = startIndex; j <= endIndex - 1; j++) {
-            if (this.array[j] < pivot) {
+            if (Driver.longs[j] < pivot) {
                 i++;
                 swap(i, j);
             }
@@ -45,8 +45,8 @@ public class QuickSortRunnable implements Runnable{
     }
 
     private void swap(int element1, int element2) {
-        long temporaryValue = this.array[element1];
-        this.array[element1] = this.array[element2];
-        this.array[element2] = temporaryValue;
+        long temporaryValue = Driver.longs[element1];
+        Driver.longs[element1] = Driver.longs[element2];
+        Driver.longs[element2] = temporaryValue;
     }
 }
