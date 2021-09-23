@@ -11,10 +11,6 @@ public class AlgorithmComparison {
 
         longsAsArray = longsAsArrayList.stream().mapToLong(i -> i).toArray();
 
-        timSort(longsAsArray);
-
-        longsAsArray = longsAsArrayList.stream().mapToLong(i -> i).toArray();
-
         quickSort(longsAsArray);
     }
 
