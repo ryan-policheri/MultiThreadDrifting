@@ -2,7 +2,6 @@ package quicksort;
 
 import java.io.DataInputStream;
 import java.io.IOException;
-import java.util.Arrays;
 
 public class LoadRunnable implements Runnable {
     private final DataInputStream dataInputStream;

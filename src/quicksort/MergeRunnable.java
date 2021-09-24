@@ -1,56 +1,62 @@
 package quicksort;
 
-import java.util.Arrays;
-
 public class MergeRunnable implements Runnable {
+    private final long[] longArray;
+    private final int[] subArrayA;
+    private final int[] subArrayB;
     private final int startIndex;
-    private final int middleIndex;
-    private final int endIndex;
+    private final int subArrayASize;
+    private final int subArrayBSize;
 
-    public MergeRunnable(int startIndex, int middleIndex, int endIndex) {
+    public MergeRunnable(long[] longArray, int[] subArrayA, int[] subArrayB, int startIndex) {
+        this.longArray = longArray;
+        this.subArrayA = subArrayA;
+        this.subArrayB = subArrayB;
         this.startIndex = startIndex;
-        this.middleIndex = middleIndex;
-        this.endIndex = endIndex;
+        subArrayASize = subArrayA[1] - subArrayA[0] + 1;
+        subArrayBSize = subArrayB[1] - subArrayB[0] + 1;
     }
 
     public void run() {
         merge();
-        Driver.countDownLatch.countDown();
+        Driver.mergeLevelCountDownLatch.countDown();
+
+        try {
+            Driver.mergeLevelCountDownLatch.await();
+        } catch (InterruptedException exception) {
+            exception.printStackTrace();
+        }
+
+        int endIndex = startIndex + subArrayASize + subArrayBSize - 1;
+        int[] indices = {startIndex, endIndex};
+        Driver.mergeableChunkQueue.add(indices);
     }
 
     private void merge() {
-        int leftArraySize = middleIndex - startIndex + 1;
-        int rightArraySize = endIndex - middleIndex;
-
-        long[] leftArray = new long[leftArraySize];
-        long[] rightArray = new long[rightArraySize];
-
-        System.arraycopy(Driver.longs, startIndex, leftArray, 0, leftArraySize);
-        System.arraycopy(Driver.longs, middleIndex + 1, rightArray, 0, rightArraySize);
-
-        int i = 0, j = 0;
+        int i = subArrayA[0], j = subArrayB[0];
 
         int currentArrayIndex = startIndex;
-        while (i < leftArraySize && j < rightArraySize) {
-            if (leftArray[i] <= rightArray[j]) {
-                Driver.longs[currentArrayIndex] = leftArray[i];
+
+        while (i < subArrayA[0] + subArrayASize && j < subArrayB[0] + subArrayBSize) {
+            if (Driver.longs[i] <= Driver.longs[j]) {
+                longArray[currentArrayIndex] = Driver.longs[i];
                 i++;
             }
             else {
-                Driver.longs[currentArrayIndex] = rightArray[j];
+                longArray[currentArrayIndex] = Driver.longs[j];
                 j++;
             }
             currentArrayIndex++;
         }
 
-        while (i < leftArraySize) {
-            Driver.longs[currentArrayIndex] = leftArray[i];
+        while (i < subArrayA[0] + subArrayASize) {
+            longArray[currentArrayIndex] = Driver.longs[i];
             i++;
             currentArrayIndex++;
         }
 
-        while (j < rightArraySize) {
-            Driver.longs[currentArrayIndex] = rightArray[j];
+        while (j < subArrayB[0] + subArrayBSize) {
+            longArray[currentArrayIndex] = Driver.longs[j];
             j++;
             currentArrayIndex++;
         }

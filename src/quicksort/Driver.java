@@ -3,19 +3,23 @@ package quicksort;
 import java.io.DataInputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.Arrays;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.concurrent.*;
 
 public class Driver {
     protected static int numberOfThreads;
     protected static BlockingQueue<int[]> sortableChunkQueue;
     protected static BlockingQueue<int[]> mergeableChunkQueue;
-    protected static CountDownLatch countDownLatch;
+    protected static CountDownLatch mergeLevelCountDownLatch;
     protected static long[] longs;
+    protected static int mergeStartIndex;
 
     private static ExecutorService executorService;
 
     public static void main(String[] args) throws IOException, InterruptedException {
+        Instant totalStartTime = Instant.now();
+
         numberOfThreads = Integer.parseInt(args[1]);
         executorService = Executors.newFixedThreadPool(numberOfThreads);
         sortableChunkQueue = new LinkedBlockingQueue<>();
@@ -28,10 +32,14 @@ public class Driver {
 
         for (int arraysToMerge = numberOfThreads; arraysToMerge != 1; arraysToMerge /= 2) {
             mergeWithThreads(arraysToMerge);
-            countDownLatch.await();
         }
 
         executorService.shutdown();
+        executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
+
+        Instant totalEndTime = Instant.now();
+        long totalTimeTaken = Duration.between(totalStartTime, totalEndTime).toMillis();
+        System.out.printf("Total time taken: %dms\n", totalTimeTaken);
     }
 
     private static void loadWithThread(String fileName) throws IOException {
@@ -57,27 +65,29 @@ public class Driver {
     }
 
     private static void mergeWithThreads(int arraysToMerge) throws InterruptedException {
-        countDownLatch = new CountDownLatch(arraysToMerge / 2);
+        int[] subArrayA;
+        int[] subArrayB;
+        int subArrayASize;
+        int subArrayBSize;
 
-        int chunkSize = longs.length / arraysToMerge * 2;
+        int mergesToPerform = arraysToMerge / 2;
+        mergeStartIndex = 0;
 
-        int startIndex;
-        int endIndex;
+        long[] longsCopy = new long[longs.length];
+        System.arraycopy(longs, 0, longsCopy, 0, longsCopy.length);
 
-        for (int i = 0; i < longs.length / chunkSize; i++) {
-            startIndex = chunkSize * i;
+        mergeLevelCountDownLatch = new CountDownLatch(mergesToPerform);
 
-            if (i == arraysToMerge - 1) {
-                endIndex = longs.length - 1;
-            } else {
-                endIndex = chunkSize * (i + 1) - 1;
-            }
-
-            int middleIndex = startIndex + (endIndex - startIndex) / 2;
-
-            executorService.submit(new MergeRunnable(startIndex, middleIndex, endIndex));
+        for (int i = 0; i < mergesToPerform; i++) {
+            subArrayA = mergeableChunkQueue.take();
+            subArrayB = mergeableChunkQueue.take();
+            executorService.submit(new MergeRunnable(longsCopy, subArrayA, subArrayB, mergeStartIndex));
+            subArrayASize = subArrayA[1] - subArrayA[0] + 1;
+            subArrayBSize = subArrayB[1] - subArrayB[0] + 1;
+            mergeStartIndex += subArrayASize + subArrayBSize;
         }
 
-        countDownLatch.await();
+        mergeLevelCountDownLatch.await();
+        System.arraycopy(longsCopy, 0, longs, 0, longs.length);
     }
 }

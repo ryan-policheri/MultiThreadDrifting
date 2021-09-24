@@ -1,9 +1,5 @@
 package quicksort;
 
-import java.time.Duration;
-import java.time.Instant;
-import java.util.Arrays;
-
 public class QuickSortRunnable implements Runnable {
     private final int startIndex;
     private final int endIndex;
@@ -34,8 +30,8 @@ public class QuickSortRunnable implements Runnable {
 
         int i = startIndex - 1;
 
-        for (int j = startIndex; j <= endIndex - 1; j++) {
-            if (Driver.longs[j] < pivot) {
+        for (int j = startIndex; j < endIndex; j++) {
+            if (Driver.longs[j] <= pivot) {
                 i++;
                 swap(i, j);
             }
