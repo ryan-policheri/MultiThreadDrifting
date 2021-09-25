@@ -6,7 +6,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 
-public class MainDriver {
+public class Driver {
     private static final long _bucketLength = 100;
     private static final int _workerThreads = 4;
     private static final int _inputLength = 1000000;

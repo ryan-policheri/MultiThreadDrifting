@@ -4,7 +4,7 @@ import common.*;
 import java.io.IOException;
 import java.util.ArrayList;
 
-public class MainDriver {
+public class Driver {
     private static final int _workerThreads = 16;
     private static final int _inputLength = 1000000;
 
