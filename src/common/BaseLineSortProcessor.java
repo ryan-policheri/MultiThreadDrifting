@@ -12,12 +12,10 @@ public class BaseLineSortProcessor implements IHandleLong, ISortFile {
         _items = new ArrayList<Long>();
     }
 
-    public String sortFile(String inputFilePath) throws IOException {
+    public void sortFile(String inputFilePath, String outputFilePath) throws IOException {
         DataLoader.readInput(inputFilePath, this);
         _items.sort(null);
-        String outputFilePath = calculateOutputFilePath(inputFilePath);
         LongWriter.writeLongArray(outputFilePath, _items);
-        return outputFilePath;
     }
 
     public void push(long number) {
@@ -27,14 +25,5 @@ public class BaseLineSortProcessor implements IHandleLong, ISortFile {
     @Override
     public void donePushingLongs() {
         //Do nothing
-    }
-
-    private String calculateOutputFilePath(String inputFilePath) {
-        File file = new File(inputFilePath);
-        String directory = file.getParent();
-        String name = file.getName();
-        name = "BaseLineSortProcessor_Sorted_" + name;
-        String filePath = Paths.get(directory, name).toString();
-        return filePath;
     }
 }

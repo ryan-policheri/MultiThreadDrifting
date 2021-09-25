@@ -18,7 +18,7 @@ public class BucketSort1Processor implements ISortFile {
     }
 
     @Override
-    public String sortFile(String inputFilePath) throws IOException {
+    public void sortFile(String inputFilePath, String outputFilePath) throws IOException {
         BucketManager manager = new BucketManager(_bucketLength);
         BinaryInputReader reader = new BinaryInputReader(inputFilePath, manager);
 
@@ -51,20 +51,9 @@ public class BucketSort1Processor implements ISortFile {
             }
         }
 
-        String outputFilePath = calculateOutputFilePath(inputFilePath);
         ArrayList<Long> outputArray = manager.buildResult();
         LongWriter.writeLongArray(outputFilePath, outputArray);
 
         System.out.println("Program put " + manager.bucketContentSum() + " items into buckets");
-        return outputFilePath;
-    }
-
-    private String calculateOutputFilePath(String inputFilePath) {
-        File file = new File(inputFilePath);
-        String directory = file.getParent();
-        String name = file.getName();
-        name = "BucketSortProcessor_Sorted_" + name;
-        String filePath = Paths.get(directory, name).toString();
-        return filePath;
     }
 }

@@ -3,5 +3,5 @@ package common;
 import java.io.IOException;
 
 public interface ISortFile {
-    String sortFile(String inputFilePath) throws IOException;
+    void sortFile(String inputFilePath, String outputFilePath) throws IOException;
 }
