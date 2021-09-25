@@ -20,6 +20,6 @@ public class RootDriver {
         generationType = generationType.toUpperCase();
 
         DataSetGenerator.GenerateInputFile(path, inputSize, generationType);
-        BinaryFileToTextFile.ConvertBinaryLongsToTextLongs(path);
+        if (args.length == 5 && args[4].toUpperCase().equals("TRUE")) BinaryFileToTextFile.ConvertBinaryLongsToTextLongs(path);
     }
 }
