@@ -1,6 +1,7 @@
 package root;
 
 import bucketsort1.BucketSort1Processor;
+import common.BaseLineSortProcessor;
 import common.BinaryFileToTextFile;
 import common.DataSetGenerator;
 import common.ISortFile;
@@ -24,7 +25,8 @@ public class RootDriver {
             int inputSize = Integer.parseInt(args[1]);
 
             ISortFile processor;
-            if (solution.equals(BUCKET_SORT)) processor = new BucketSort1Processor(100, numberOfThreads); //we don't know what a good bucket length is ahead of time, that's the problem w/ bucket sort
+            if (solution.equals(BASELINE)) processor = new BaseLineSortProcessor();
+            else if (solution.equals(BUCKET_SORT)) processor = new BucketSort1Processor(100, numberOfThreads); //we don't know what a good bucket length is ahead of time, that's the problem w/ bucket sort
             else if (solution.equals(MAP_REDUCE)) processor = new MapReduceProcessor(numberOfThreads);
         }
     }

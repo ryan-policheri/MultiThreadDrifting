@@ -1,6 +1,7 @@
 package mapreduce;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.Queue;
 
@@ -100,7 +101,9 @@ public class MapReduceDataManager implements IHandleLong {
 
     public ReducedRecord[] getFinalResult() {
         synchronized (_reducedManagementLock) {
-            return _reducedResults.get(0).Records;
+            var records = _reducedResults.get(0).Records;
+            Arrays.sort(records);
+            return records;
         }
     }
 }

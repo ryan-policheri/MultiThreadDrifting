@@ -11,7 +11,7 @@ public class Driver {
     private static final int _workerThreads = 16;
     private static final int _inputLength = 1000000;
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws IOException, InterruptedException {
         String inputFile = args[0]; //This file would come generated. But generating it below for convenience
         inputFile = System.getProperty("user.dir") + "\\" + "array.bin";
         String outputFile = args[1];
@@ -55,7 +55,7 @@ public class Driver {
         }
     }
 
-    private static void runProcessor(ISortFile fileProcessor, Trial trial) throws IOException {
+    private static void runProcessor(ISortFile fileProcessor, Trial trial) throws IOException, InterruptedException {
         trial.OutputFile = calculateOutputFilePath(trial.InputFile, trial.SolutionName);
         long startTime = System.nanoTime();
         fileProcessor.sortFile(trial.InputFile, trial.OutputFile);

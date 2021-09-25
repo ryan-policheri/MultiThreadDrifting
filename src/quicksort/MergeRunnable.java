@@ -19,17 +19,17 @@ public class MergeRunnable implements Runnable {
 
     public void run() {
         merge();
-        Driver.mergeLevelCountDownLatch.countDown();
+        QuickSortProcessor.mergeLevelCountDownLatch.countDown();
 
         try {
-            Driver.mergeLevelCountDownLatch.await();
+            QuickSortProcessor.mergeLevelCountDownLatch.await();
         } catch (InterruptedException exception) {
             exception.printStackTrace();
         }
 
         int endIndex = startIndex + subArrayASize + subArrayBSize - 1;
         int[] indices = {startIndex, endIndex};
-        Driver.mergeableChunkQueue.add(indices);
+        QuickSortProcessor.mergeableChunkQueue.add(indices);
     }
 
     private void merge() {
@@ -38,25 +38,25 @@ public class MergeRunnable implements Runnable {
         int currentArrayIndex = startIndex;
 
         while (i < subArrayA[0] + subArrayASize && j < subArrayB[0] + subArrayBSize) {
-            if (Driver.longs[i] <= Driver.longs[j]) {
-                longArray[currentArrayIndex] = Driver.longs[i];
+            if (QuickSortProcessor.longs[i] <= QuickSortProcessor.longs[j]) {
+                longArray[currentArrayIndex] = QuickSortProcessor.longs[i];
                 i++;
             }
             else {
-                longArray[currentArrayIndex] = Driver.longs[j];
+                longArray[currentArrayIndex] = QuickSortProcessor.longs[j];
                 j++;
             }
             currentArrayIndex++;
         }
 
         while (i < subArrayA[0] + subArrayASize) {
-            longArray[currentArrayIndex] = Driver.longs[i];
+            longArray[currentArrayIndex] = QuickSortProcessor.longs[i];
             i++;
             currentArrayIndex++;
         }
 
         while (j < subArrayB[0] + subArrayBSize) {
-            longArray[currentArrayIndex] = Driver.longs[j];
+            longArray[currentArrayIndex] = QuickSortProcessor.longs[j];
             j++;
             currentArrayIndex++;
         }
