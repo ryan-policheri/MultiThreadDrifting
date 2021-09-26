@@ -22,12 +22,12 @@ public class ReduceJob implements Runnable {
     public void run() {
         if (_longs != null) {
             Reducer reducer = new Reducer(_longs);
-            ReductionResult result = reducer.ReduceAndSort();
+            ReductionResult result = reducer.Reduce();
             _manager.pushReducedChunk(result);
         }
         else { //pair not null
             Reducer reducer = new Reducer(_pair);
-            ReductionResult result = reducer.ReduceAndSort();
+            ReductionResult result = reducer.Reduce();
             _manager.pushReducedChunk(result);
         }
     }

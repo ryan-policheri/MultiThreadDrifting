@@ -13,7 +13,7 @@ public class QuickSortRunnable implements Runnable {
     public void run() {
         quickSort(this.startIndex, this.endIndex);
         int[] indices = {startIndex, endIndex};
-        Driver.mergeableChunkQueue.add(indices);
+        QuickSortProcessor.mergeableChunkQueue.add(indices);
     }
 
     private void quickSort(int startIndex, int endIndex) {
@@ -26,12 +26,12 @@ public class QuickSortRunnable implements Runnable {
     }
 
     private int partition(int startIndex, int endIndex) {
-        long pivot = Driver.longs[endIndex];
+        long pivot = QuickSortProcessor.longs[endIndex];
 
         int i = startIndex - 1;
 
         for (int j = startIndex; j < endIndex; j++) {
-            if (Driver.longs[j] <= pivot) {
+            if (QuickSortProcessor.longs[j] <= pivot) {
                 i++;
                 swap(i, j);
             }
@@ -41,8 +41,8 @@ public class QuickSortRunnable implements Runnable {
     }
 
     private void swap(int element1, int element2) {
-        long temporaryValue = Driver.longs[element1];
-        Driver.longs[element1] = Driver.longs[element2];
-        Driver.longs[element2] = temporaryValue;
+        long temporaryValue = QuickSortProcessor.longs[element1];
+        QuickSortProcessor.longs[element1] = QuickSortProcessor.longs[element2];
+        QuickSortProcessor.longs[element2] = temporaryValue;
     }
 }

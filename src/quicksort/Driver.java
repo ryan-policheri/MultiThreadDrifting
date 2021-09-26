@@ -1,93 +1,71 @@
 package quicksort;
 
-import java.io.DataInputStream;
-import java.io.FileInputStream;
+import common.*;
+
+import java.io.File;
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.concurrent.*;
+import java.util.ArrayList;
 
 public class Driver {
-    protected static int numberOfThreads;
-    protected static BlockingQueue<int[]> sortableChunkQueue;
-    protected static BlockingQueue<int[]> mergeableChunkQueue;
-    protected static CountDownLatch mergeLevelCountDownLatch;
-    protected static long[] longs;
-    protected static int mergeStartIndex;
-
-    private static ExecutorService executorService;
-
     public static void main(String[] args) throws IOException, InterruptedException {
-        Instant totalStartTime = Instant.now();
+        String inputFile = args[0];
+        int numberOfThreads = Integer.parseInt(args[1]);
+        ArrayList<Trial> trials = new ArrayList<Trial>();
 
-        numberOfThreads = Integer.parseInt(args[1]);
-        executorService = Executors.newFixedThreadPool(numberOfThreads);
-        sortableChunkQueue = new LinkedBlockingQueue<>();
-        mergeableChunkQueue = new LinkedBlockingQueue<>();
+        Trial baseLineTrial = new Trial();
+        baseLineTrial.InputFile = inputFile;
+        baseLineTrial.InputSize = -1;
+        baseLineTrial.SolutionName = "Baseline Processor";
 
-        String fileName = args[0];
-        loadWithThread(fileName);
+        BaseLineSortProcessor baselineProcessor = new BaseLineSortProcessor();
+        runProcessor(baselineProcessor, baseLineTrial);
+        baseLineTrial.VerificationFile = baseLineTrial.OutputFile;
+        baseLineTrial.ValidTrial = true;
+        trials.add(baseLineTrial);
 
-        quickSortWithThreads();
+        Trial quickSortTrial = new Trial();
+        quickSortTrial.InputFile = inputFile;
+        quickSortTrial.InputSize = -1;
+        quickSortTrial.SolutionName = "QuickSort Processor";
+        quickSortTrial.VerificationFile = baseLineTrial.VerificationFile;
 
-        for (int arraysToMerge = numberOfThreads; arraysToMerge != 1; arraysToMerge /= 2) {
-            mergeWithThreads(arraysToMerge);
-        }
+        QuickSortProcessor processor = new QuickSortProcessor(numberOfThreads);
 
-        executorService.shutdown();
-        executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
+        runProcessor(processor, quickSortTrial);
+        trials.add(quickSortTrial);
 
-        Instant totalEndTime = Instant.now();
-        long totalTimeTaken = Duration.between(totalStartTime, totalEndTime).toMillis();
-        System.out.printf("Total time taken: %dms\n", totalTimeTaken);
-    }
-
-    private static void loadWithThread(String fileName) throws IOException {
-        FileInputStream fileInputStream = new FileInputStream(fileName);
-        DataInputStream dataInputStream = new DataInputStream(fileInputStream);
-        int numberOfLongs = (int) fileInputStream.getChannel().size() / 8;
-        longs = new long[numberOfLongs];
-
-        executorService.submit(new LoadRunnable(dataInputStream));
-    }
-
-    private static void quickSortWithThreads() throws InterruptedException {
-        int[] indices;
-        int startIndex;
-        int endIndex;
-
-        for (int i = 0; i < numberOfThreads; i++) {
-            indices = sortableChunkQueue.take();
-            startIndex = indices[0];
-            endIndex = indices[1];
-            executorService.submit(new QuickSortRunnable(startIndex, endIndex));
+        for (Trial trial : trials) {
+            if (trial.ValidTrial == false) {
+                BinaryFileToTextFile.ConvertBinaryLongsToTextLongs(trial.OutputFile);
+            }
+            System.out.println(trial.SolutionName + " took " + trial.RunTimeInSeconds + " seconds to execute " +
+                    "(" + trial.RunTimeInNanoSeconds + " nanoseconds)." + "Solution is valid? " + trial.ValidTrial);
         }
     }
 
-    private static void mergeWithThreads(int arraysToMerge) throws InterruptedException {
-        int[] subArrayA;
-        int[] subArrayB;
-        int subArrayASize;
-        int subArrayBSize;
+    private static void runProcessor(ISortFile fileProcessor, Trial trial) throws IOException, InterruptedException {
+        trial.OutputFile = calculateOutputFilePath(trial.InputFile, trial.SolutionName);
+        long startTime = System.nanoTime();
+        fileProcessor.sortFile(trial.InputFile, trial.OutputFile);
+        long endTime = System.nanoTime();
+        long duration = endTime - startTime;
+        long durationInSeconds = duration / 1000000000;
+        trial.RunTimeInNanoSeconds = duration;
+        trial.RunTimeInSeconds = durationInSeconds;
 
-        int mergesToPerform = arraysToMerge / 2;
-        mergeStartIndex = 0;
+        TrialValidator validator = new TrialValidator();
+        validator.validateTrial(trial);
+    }
 
-        long[] longsCopy = new long[longs.length];
-        System.arraycopy(longs, 0, longsCopy, 0, longsCopy.length);
-
-        mergeLevelCountDownLatch = new CountDownLatch(mergesToPerform);
-
-        for (int i = 0; i < mergesToPerform; i++) {
-            subArrayA = mergeableChunkQueue.take();
-            subArrayB = mergeableChunkQueue.take();
-            executorService.submit(new MergeRunnable(longsCopy, subArrayA, subArrayB, mergeStartIndex));
-            subArrayASize = subArrayA[1] - subArrayA[0] + 1;
-            subArrayBSize = subArrayB[1] - subArrayB[0] + 1;
-            mergeStartIndex += subArrayASize + subArrayBSize;
-        }
-
-        mergeLevelCountDownLatch.await();
-        System.arraycopy(longsCopy, 0, longs, 0, longs.length);
+    private static String calculateOutputFilePath(String inputFilePath, String solutionName) {
+        File file = new File(inputFilePath);
+        String directory = file.getParent();
+        String name = file.getName();
+        name = solutionName + "_Sorted_" + name;
+        String filePath = Paths.get(directory, name).toString();
+        return filePath;
     }
 }

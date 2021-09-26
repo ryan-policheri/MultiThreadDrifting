@@ -1,14 +1,17 @@
 package mapreduce;
 
 import common.*;
+
+import java.io.File;
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 
-public class MainDriver {
+public class Driver {
     private static final int _workerThreads = 16;
     private static final int _inputLength = 1000000;
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws IOException, InterruptedException {
         String inputFile = args[0]; //This file would come generated. But generating it below for convenience
         inputFile = System.getProperty("user.dir") + "\\" + "array.bin";
         String outputFile = args[1];
@@ -52,9 +55,10 @@ public class MainDriver {
         }
     }
 
-    private static void runProcessor(ISortFile fileProcessor, Trial trial) throws IOException {
+    private static void runProcessor(ISortFile fileProcessor, Trial trial) throws IOException, InterruptedException {
+        trial.OutputFile = calculateOutputFilePath(trial.InputFile, trial.SolutionName);
         long startTime = System.nanoTime();
-        trial.OutputFile = fileProcessor.sortFile(trial.InputFile);
+        fileProcessor.sortFile(trial.InputFile, trial.OutputFile);
         long endTime = System.nanoTime();
         long duration = endTime - startTime;
         long durationInSeconds = duration / 1000000000;
@@ -63,5 +67,14 @@ public class MainDriver {
 
         TrialValidator validator = new TrialValidator();
         validator.validateTrial(trial);
+    }
+
+    private static String calculateOutputFilePath(String inputFilePath, String solutionName) {
+        File file = new File(inputFilePath);
+        String directory = file.getParent();
+        String name = file.getName();
+        name = solutionName + "_Sorted_" + name;
+        String filePath = Paths.get(directory, name).toString();
+        return filePath;
     }
 }

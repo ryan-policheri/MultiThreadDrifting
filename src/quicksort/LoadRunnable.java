@@ -20,25 +20,25 @@ public class LoadRunnable implements Runnable {
     }
 
     private void load() throws IOException {
-        int chunkSize = Driver.longs.length / Driver.numberOfThreads;
+        int chunkSize = QuickSortProcessor.longs.length / QuickSortProcessor.numberOfThreads;
         int startIndex;
         int endIndex;
         int[] indices;
 
-        for (int i = 0; i < Driver.numberOfThreads; i++) {
+        for (int i = 0; i < QuickSortProcessor.numberOfThreads; i++) {
             startIndex = chunkSize * i;
             endIndex = chunkSize * i + chunkSize - 1;
 
-            if (i == Driver.numberOfThreads - 1) {
-                endIndex = Driver.longs.length - 1;
+            if (i == QuickSortProcessor.numberOfThreads - 1) {
+                endIndex = QuickSortProcessor.longs.length - 1;
             }
 
             for (int j = startIndex; j <= endIndex; j++) {
-                Driver.longs[j] = dataInputStream.readLong();
+                QuickSortProcessor.longs[j] = dataInputStream.readLong();
             }
 
             indices = new int[]{startIndex, endIndex};
-            Driver.sortableChunkQueue.add(indices);
+            QuickSortProcessor.sortableChunkQueue.add(indices);
         }
 
         dataInputStream.close();
