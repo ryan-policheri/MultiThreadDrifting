@@ -29,7 +29,7 @@ public class MapReduceProcessor implements ISortFile {
         } else {
             File file = new File(inputFilePath);
             long lengthInBytes = file.length();
-            long longCount = lengthInBytes / _bytesPerLong;
+            int longCount = (int)(lengthInBytes / _bytesPerLong);
             int chunks = _numberOfThreads * _chunkMultiplier;
             MapReduceDataManager reduceDataManager = new MapReduceDataManager(longCount, chunks);
 
@@ -58,7 +58,6 @@ public class MapReduceProcessor implements ISortFile {
                 }
             }
 
-            pool.shutdownNow();
             ReducedRecordWriter.WriteRecords(outputFile, reduceDataManager.getFinalResult());
         }
     }
