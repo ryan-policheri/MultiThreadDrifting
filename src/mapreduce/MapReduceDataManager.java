@@ -92,16 +92,11 @@ public class MapReduceDataManager implements IHandleLong {
     }
 
     public boolean hasReducedAllData() {
-        synchronized (_reducedManagementLock) {
-            return (_reducedNumbersWeightedCount == _longCount);
-        }
+        return (_reducedNumbersWeightedCount == _longCount); //Read only don't wait for lock
     }
 
     public ReducedRecord[] getFinalResult() {
-        synchronized (_reducedManagementLock) {
-            var records = _reducedResults.get(0).Records;
-            Arrays.sort(records);
-            return records;
-        }
+        var records = _reducedResults.poll().Records;
+        return records;
     }
 }
