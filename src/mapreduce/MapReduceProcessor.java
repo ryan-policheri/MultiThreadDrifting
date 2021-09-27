@@ -28,7 +28,7 @@ public class MapReduceProcessor implements ISortFile {
         if (_numberOfThreads == 1) {
             ArrayList<Long> longs = DataLoader.readInput(inputFilePath);
             Reducer reducer = new Reducer(longs);
-            ReductionResult result = reducer.ReduceAndSort();
+            ReductionResult result = reducer.reduceAndSort();
             ReducedRecordWriter.WriteRecords(outputFile, result.Records);
         } else {
             File file = new File(inputFilePath);
