@@ -12,7 +12,7 @@ namespace ConcurrencySolutionTester
 
         private static readonly int[] _threadCountsToTest = { 1, 2, 4, 8, 16, 32, 64, 128 };
         private static readonly string _baselineSolution = "BASELINE";
-        private static readonly string[] _solutionsToTest = { "MAP_REDUCE", "QUICK_SORT" };
+        private static readonly string[] _solutionsToTest = { "MAP_REDUCE" };
 
         private static string _jarFile;
         private static bool _inputFilesAlreadyExist = false;
@@ -51,7 +51,7 @@ namespace ConcurrencySolutionTester
 
             foreach (TestFile test in testFiles)
             {
-                performedTests.Add(new PerformedTest(test, _baselineSolution, 1));
+                //performedTests.Add(new PerformedTest(test, _baselineSolution, 1));
 
                 foreach (int threadCount in _threadCountsToTest)
                 {
