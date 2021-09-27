@@ -5,8 +5,6 @@ import common.*;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
-import java.time.Duration;
-import java.time.Instant;
 import java.util.ArrayList;
 
 public class Driver {
@@ -38,7 +36,7 @@ public class Driver {
         trials.add(quickSortTrial);
 
         for (Trial trial : trials) {
-            if (trial.ValidTrial == false) {
+            if (!trial.ValidTrial) {
                 BinaryFileToTextFile.ConvertBinaryLongsToTextLongs(trial.OutputFile);
             }
             System.out.println(trial.SolutionName + " took " + trial.RunTimeInSeconds + " seconds to execute " +

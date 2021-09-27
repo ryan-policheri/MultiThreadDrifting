@@ -3,9 +3,10 @@ package quicksort;
 import common.ISortFile;
 import common.LongWriter;
 
-import java.io.DataInputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.concurrent.*;
 
 public class QuickSortProcessor implements ISortFile {
@@ -19,10 +20,12 @@ public class QuickSortProcessor implements ISortFile {
     private static ExecutorService executorService;
 
     public QuickSortProcessor(int numberOfThreads) {
-        this.numberOfThreads = numberOfThreads;
+        QuickSortProcessor.numberOfThreads = numberOfThreads;
     }
 
     public void sortFile(String inputFile, String outputFile) throws IOException, InterruptedException {
+        Instant startTime = Instant.now();
+
         executorService = Executors.newFixedThreadPool(numberOfThreads);
         sortableChunkQueue = new LinkedBlockingQueue<>();
         mergeableChunkQueue = new LinkedBlockingQueue<>();
@@ -37,16 +40,27 @@ public class QuickSortProcessor implements ISortFile {
         executorService.shutdown();
         executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
 
+        Instant endTime = Instant.now();
+
+        long timeTaken = Duration.between(startTime, endTime).toMillis();
+        System.out.printf("Total time taken: %dms\n", timeTaken);
+
+        for (int i = 0; i < longs.length - 1; i ++) {
+            if (longs[i] > longs[i+1]) {
+                System.err.println("Not Sorted");
+            }
+        }
+
+        System.out.println("Sorted");
         LongWriter.writeLongArray(outputFile, longs);
     }
 
     private static void loadWithThread(String fileName) throws IOException {
         FileInputStream fileInputStream = new FileInputStream(fileName);
-        DataInputStream dataInputStream = new DataInputStream(fileInputStream);
         int numberOfLongs = (int) fileInputStream.getChannel().size() / 8;
         longs = new long[numberOfLongs];
 
-        executorService.submit(new LoadRunnable(dataInputStream));
+        executorService.submit(new LoadRunnable(fileInputStream));
     }
 
     private static void quickSortWithThreads() throws InterruptedException {
