@@ -9,7 +9,7 @@ public class DataGenerator {
     public static void main(String[] args) {
         int numberOfLongs = Integer.parseInt(args[0]);
 
-        long longs[] = new long[numberOfLongs];
+        long[] longs = new long[numberOfLongs];
         Random r = new Random(1234);
         for (int i = 0; i < longs.length; i++) {
             longs[i] = r.nextLong() % 1000;
@@ -19,14 +19,14 @@ public class DataGenerator {
             FileOutputStream fileOutputStream = new FileOutputStream("array.bin");
             DataOutputStream dataOutputStream = new DataOutputStream(fileOutputStream);
 
-            for (int i = 0; i < longs.length; i++) {
-                dataOutputStream.writeLong(longs[i]);
+            for (long l : longs) {
+                dataOutputStream.writeLong(l);
             }
 
             dataOutputStream.close();
             fileOutputStream.close();
         } catch (IOException exception) {
-            System.err.println(exception);
+            exception.printStackTrace();
         }
     }
 }

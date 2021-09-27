@@ -17,6 +17,7 @@ public class MergeRunnable implements Runnable {
         subArrayBSize = subArrayB[1] - subArrayB[0] + 1;
     }
 
+    @Override
     public void run() {
         merge();
         QuickSortProcessor.mergeLevelCountDownLatch.countDown();
