@@ -40,7 +40,7 @@ public class LoadRunnable implements Runnable {
             }
 
             for (int j = startIndex; j <= endIndex; j++) {
-                bufferedInputStream.read(buffer, 0, 8);
+                bufferedInputStream.read(buffer, 0, Byte.SIZE);
                 byteBuffer = ByteBuffer.wrap(buffer);
                 QuickSortProcessor.longs[j] = byteBuffer.getLong();
             }

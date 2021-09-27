@@ -1,10 +1,9 @@
 package quicksort;
 
 import common.ISortFile;
-import common.LongWriter;
 
-import java.io.FileInputStream;
-import java.io.IOException;
+import java.io.*;
+import java.nio.ByteBuffer;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.concurrent.*;
@@ -31,11 +30,14 @@ public class QuickSortProcessor implements ISortFile {
         mergeableChunkQueue = new LinkedBlockingQueue<>();
 
         loadWithThread(inputFile);
+
         quickSortWithThreads();
 
         for (int arraysToMerge = numberOfThreads; arraysToMerge != 1; arraysToMerge /= 2) {
             mergeWithThreads(arraysToMerge);
         }
+
+        writeWithThread();
 
         executorService.shutdown();
         executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
@@ -44,15 +46,6 @@ public class QuickSortProcessor implements ISortFile {
 
         long timeTaken = Duration.between(startTime, endTime).toMillis();
         System.out.printf("Total time taken: %dms\n", timeTaken);
-
-        for (int i = 0; i < longs.length - 1; i ++) {
-            if (longs[i] > longs[i+1]) {
-                System.err.println("Not Sorted");
-            }
-        }
-
-        System.out.println("Sorted");
-        LongWriter.writeLongArray(outputFile, longs);
     }
 
     private static void loadWithThread(String fileName) throws IOException {
@@ -101,5 +94,19 @@ public class QuickSortProcessor implements ISortFile {
 
         mergeLevelCountDownLatch.await();
         System.arraycopy(longsCopy, 0, longs, 0, longs.length);
+    }
+
+    private static void writeWithThread() throws IOException {
+        FileOutputStream fileOutputStream = new FileOutputStream("src/quicksort/array_sorted.bin");
+        BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(fileOutputStream);
+        ByteBuffer byteBuffer = ByteBuffer.allocate(Byte.SIZE);
+        byte[] buffer;
+
+        for (long l : longs) {
+            buffer = byteBuffer.putLong(0, l).array();
+            bufferedOutputStream.write(buffer, 0, Byte.SIZE);
+        }
+
+        bufferedOutputStream.close();
     }
 }
