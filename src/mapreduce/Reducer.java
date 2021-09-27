@@ -81,7 +81,7 @@ public class Reducer {
             }
             else if (result1Index == -1 && result2Index != -1) {
                 records.add(i, result2[result2Index]);
-                weigthedLength += result1[result2Index].Count;
+                weigthedLength += result2[result2Index].Count;
                 result2Index++;
             }
             else { lastUsedIndex = i - 1; break; }
