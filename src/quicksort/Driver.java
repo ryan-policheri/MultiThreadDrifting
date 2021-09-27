@@ -10,11 +10,13 @@ import java.util.ArrayList;
 public class Driver {
     public static void main(String[] args) throws IOException, InterruptedException {
         String inputFile = args[0];
-        int numberOfThreads = Integer.parseInt(args[1]);
+        String outputFile = args[1];
+        int numberOfThreads = Integer.parseInt(args[2]);
         ArrayList<Trial> trials = new ArrayList<Trial>();
 
         Trial baseLineTrial = new Trial();
         baseLineTrial.InputFile = inputFile;
+        baseLineTrial.OutputFile = "src/quicksort/sorted_baseline.bin";
         baseLineTrial.InputSize = -1;
         baseLineTrial.SolutionName = "Baseline Processor";
 
@@ -26,6 +28,7 @@ public class Driver {
 
         Trial quickSortTrial = new Trial();
         quickSortTrial.InputFile = inputFile;
+        quickSortTrial.OutputFile = outputFile;
         quickSortTrial.InputSize = -1;
         quickSortTrial.SolutionName = "QuickSort Processor";
         quickSortTrial.VerificationFile = baseLineTrial.VerificationFile;
@@ -45,7 +48,6 @@ public class Driver {
     }
 
     private static void runProcessor(ISortFile fileProcessor, Trial trial) throws IOException, InterruptedException {
-        trial.OutputFile = calculateOutputFilePath(trial.InputFile, trial.SolutionName);
         long startTime = System.nanoTime();
         fileProcessor.sortFile(trial.InputFile, trial.OutputFile);
         long endTime = System.nanoTime();
@@ -56,14 +58,5 @@ public class Driver {
 
         TrialValidator validator = new TrialValidator();
         validator.validateTrial(trial);
-    }
-
-    private static String calculateOutputFilePath(String inputFilePath, String solutionName) {
-        File file = new File(inputFilePath);
-        String directory = file.getParent();
-        String name = file.getName();
-        name = solutionName + "_Sorted_" + name;
-        String filePath = Paths.get(directory, name).toString();
-        return filePath;
     }
 }

@@ -31,7 +31,7 @@ public class QuickSortRunnable implements Runnable {
         int i = startIndex - 1;
 
         for (int j = startIndex; j < endIndex; j++) {
-            if (QuickSortProcessor.longs[j] <= pivot) {
+            if (QuickSortProcessor.longs[j] < pivot) {
                 i++;
                 swap(i, j);
             }
