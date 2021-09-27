@@ -1,10 +1,12 @@
 package quicksort;
 
-import java.io.DataInputStream;
+import java.io.BufferedInputStream;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.nio.ByteBuffer;
 
 public class LoadRunnable implements Runnable {
-    private final DataInputStream dataInputStream;
+    private final FileInputStream fileInputStream;
 
     @Override
     public void run() {
@@ -15,12 +17,16 @@ public class LoadRunnable implements Runnable {
         }
     }
 
-    public LoadRunnable(DataInputStream dataInputStream) {
-        this.dataInputStream = dataInputStream;
+    public LoadRunnable(FileInputStream fileInputStream) {
+        this.fileInputStream = fileInputStream;
     }
 
     private void load() throws IOException {
         int chunkSize = QuickSortProcessor.longs.length / QuickSortProcessor.numberOfThreads;
+        BufferedInputStream bufferedInputStream = new BufferedInputStream(fileInputStream);
+        byte[] buffer = new byte[8];
+        ByteBuffer byteBuffer;
+
         int startIndex;
         int endIndex;
         int[] indices;
@@ -34,13 +40,13 @@ public class LoadRunnable implements Runnable {
             }
 
             for (int j = startIndex; j <= endIndex; j++) {
-                QuickSortProcessor.longs[j] = dataInputStream.readLong();
+                bufferedInputStream.read(buffer, 0, 8);
+                byteBuffer = ByteBuffer.wrap(buffer);
+                QuickSortProcessor.longs[j] = byteBuffer.getLong();
             }
 
             indices = new int[]{startIndex, endIndex};
             QuickSortProcessor.sortableChunkQueue.add(indices);
         }
-
-        dataInputStream.close();
     }
 }
