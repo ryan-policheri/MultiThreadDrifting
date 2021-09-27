@@ -41,8 +41,11 @@ namespace ConcurrencySolutionTester
                 }
             }
 
-            string json = JsonSerializer.Serialize(testsToPerform);
-            Console.Write("FOO");
+            TestReporter reporter = new TestReporter(testsToPerform);
+            ExcelService service = new ExcelService();
+            string outputFile = SystemFunctions.CombineDirectoryComponents(_workingDirectory, DateTime.Now.Ticks + "_" + "Results.xlsx");
+            service.ExportTests(reporter, outputFile);
+            SystemFunctions.OpenFile(outputFile);
         }
 
         private static ICollection<PerformedTest> CreateTestsToPerform(ICollection<TestFile> testFiles)
