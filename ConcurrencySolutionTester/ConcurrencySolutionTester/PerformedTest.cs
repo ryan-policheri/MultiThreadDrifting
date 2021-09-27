@@ -1,34 +1,43 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace ConcurrencySolutionTester
 {
     public class PerformedTest
     {
-        public PerformedTest(TestFile inputFile, string solution, int threadCount)
+        public PerformedTest(TestFileSet inputFileSet, string solution, int threadCount)
         {
-            InputFile = inputFile;
+            InputFileSet = inputFileSet;
             Solution = solution;
             ThreadCount = threadCount;
         }
 
-        public TestFile InputFile { get; }
+        public TestFileSet InputFileSet { get; }
 
         public string Solution { get; }
 
         public int ThreadCount { get; }
 
-        public string OutputFile => CalculateOutputFile();
+        public string[] OutputFiles => CalculateOutputFiles();
+
         public ProcessStats Stats { get; set; }
+
+        public int BestRunAveragedAcrossSets { get; set; }
 
         public Exception Exception { get; set; }
 
-        private string CalculateOutputFile()
+        private string[] CalculateOutputFiles()
         {
-           string fileName = $"{InputFile.FileSize}_{InputFile.GenerationType}_{ThreadCount}_{Solution}.bin";
-           string fullPath = SystemFunctions.CombineDirectoryComponents(InputFile.FileDirectory, fileName);
-           return fullPath;
+            ICollection<string> outputFiles = new List<String>();
+            foreach (TestFile file in InputFileSet.TestFiles)
+            {
+                string fileName = $"{file.FileSize}_{file.GenerationType}_Set{file.OwningSet}_{ThreadCount}_{Solution}.bin";
+                string fullPath = SystemFunctions.CombineDirectoryComponents(file.FileDirectory, fileName);
+                outputFiles.Add(fullPath);
+            }
+            return outputFiles.ToArray();
         }
     }
 }
