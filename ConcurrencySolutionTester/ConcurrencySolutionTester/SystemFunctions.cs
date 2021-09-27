@@ -31,9 +31,12 @@ namespace ConcurrencySolutionTester
                 throw new Exception("An error occurred while executing the following process: " + processFile + " " + parameters + ". The exit code was " + process.ExitCode);
             }
 
-            var stats = new ProcessStats(process.StartTime, process.ExitTime, didExit);
-            if (!didExit) process.Kill();
-            return stats;
+            if (!didExit)
+            {
+                process.Kill();
+                return new ProcessStats();
+            }
+            else { return new ProcessStats(process.StartTime, process.ExitTime, didExit); }
         }
 
         public static void CreateFreshDirectory(string directory)

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.Json;
 
 namespace ConcurrencySolutionTester
@@ -12,7 +13,7 @@ namespace ConcurrencySolutionTester
 
         private static readonly int[] _threadCountsToTest = { 1, 2, 4, 8, 16, 32, 64, 128 };
         private static readonly string _baselineSolution = "BASELINE";
-        private static readonly string[] _solutionsToTest = { "MAP_REDUCE" };
+        private static readonly string[] _solutionsToTest = { "MAP_REDUCE", "QUICK_SORT" };
 
         private static string _jarFile;
         private static bool _inputFilesAlreadyExist = false;
@@ -31,9 +32,10 @@ namespace ConcurrencySolutionTester
             {
                 try
                 {
+                    ICollection<ProcessStats> stats = new List<ProcessStats>();
                     string command = $"java -jar {_jarFile.Quotify()} {test.InputFile.FilePath} {test.OutputFile.Quotify()} {test.ThreadCount} {test.Solution}";
-                    ProcessStats stats = SystemFunctions.RunSystemProcess(command);
-                    test.Stats = stats;
+                    stats.Add(SystemFunctions.RunSystemProcess(command)); stats.Add(SystemFunctions.RunSystemProcess(command)); stats.Add(SystemFunctions.RunSystemProcess(command));
+                    test.Stats = stats.OrderBy(x => x.MillisecondsEllapsed).First(); //take best of 3
                 }
                 catch (Exception ex)
                 {
