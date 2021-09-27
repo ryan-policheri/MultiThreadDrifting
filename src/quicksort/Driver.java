@@ -14,8 +14,9 @@ public class Driver {
         int numberOfThreads = Integer.parseInt(args[2]);
         ArrayList<Trial> trials = new ArrayList<Trial>();
 
-        /*Trial baseLineTrial = new Trial();
+        Trial baseLineTrial = new Trial();
         baseLineTrial.InputFile = inputFile;
+        baseLineTrial.OutputFile = "src/quicksort/sorted_baseline.bin";
         baseLineTrial.InputSize = -1;
         baseLineTrial.SolutionName = "Baseline Processor";
 
@@ -23,19 +24,19 @@ public class Driver {
         runProcessor(baselineProcessor, baseLineTrial);
         baseLineTrial.VerificationFile = baseLineTrial.OutputFile;
         baseLineTrial.ValidTrial = true;
-        trials.add(baseLineTrial);*/
+        trials.add(baseLineTrial);
 
         Trial quickSortTrial = new Trial();
         quickSortTrial.InputFile = inputFile;
         quickSortTrial.OutputFile = outputFile;
         quickSortTrial.InputSize = -1;
         quickSortTrial.SolutionName = "QuickSort Processor";
-        //quickSortTrial.VerificationFile = baseLineTrial.VerificationFile;
+        quickSortTrial.VerificationFile = baseLineTrial.VerificationFile;
 
         QuickSortProcessor processor = new QuickSortProcessor(numberOfThreads);
 
         runProcessor(processor, quickSortTrial);
-        /*trials.add(quickSortTrial);
+        trials.add(quickSortTrial);
 
         for (Trial trial : trials) {
             if (!trial.ValidTrial) {
@@ -43,7 +44,7 @@ public class Driver {
             }
             System.out.println(trial.SolutionName + " took " + trial.RunTimeInSeconds + " seconds to execute " +
                     "(" + trial.RunTimeInNanoSeconds + " nanoseconds)." + "Solution is valid? " + trial.ValidTrial);
-        }*/
+        }
     }
 
     private static void runProcessor(ISortFile fileProcessor, Trial trial) throws IOException, InterruptedException {
@@ -56,6 +57,6 @@ public class Driver {
         trial.RunTimeInSeconds = durationInSeconds;
 
         TrialValidator validator = new TrialValidator();
-        //validator.validateTrial(trial);
+        validator.validateTrial(trial);
     }
 }
