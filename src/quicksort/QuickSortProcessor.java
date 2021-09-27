@@ -11,10 +11,10 @@ import java.util.concurrent.*;
 public class QuickSortProcessor implements ISortFile {
     protected static int numberOfThreads;
     protected static ExecutorService executorService;
+    protected static long[] longs;
     protected static BlockingQueue<int[]> sortableChunkQueue;
     protected static BlockingQueue<int[]> mergeableChunkQueue;
     protected static CountDownLatch mergeLevelCountDownLatch;
-    protected static long[] longs;
     protected static int mergeStartIndex;
     protected static Instant startTime;
     protected enum PrintDirection {
@@ -45,11 +45,10 @@ public class QuickSortProcessor implements ISortFile {
             mergeWithThreads(arraysToMerge);
         }
 
-        mergeLevelCountDownLatch.await();
-        writeFile(longs, PrintDirection.FORWARDS);
-
         executorService.shutdown();
         executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
+
+        writeFile(longs, PrintDirection.FORWARDS);
 
         Instant endTime = Instant.now();
 
