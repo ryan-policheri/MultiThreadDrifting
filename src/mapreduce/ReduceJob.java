@@ -30,5 +30,7 @@ public class ReduceJob implements Runnable {
             ReductionResult result = reducer.Reduce();
             _manager.pushReducedChunk(result);
         }
+        //long threadId = Thread.currentThread().getId();
+        //System.out.println(threadId + " did work");
     }
 }

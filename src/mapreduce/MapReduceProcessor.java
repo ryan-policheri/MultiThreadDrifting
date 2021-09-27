@@ -19,7 +19,7 @@ public class MapReduceProcessor implements ISortFile {
 
     public MapReduceProcessor(int numberOfThreads) {
         _numberOfThreads = numberOfThreads;
-        _chunkMultiplier = 1;
+        _chunkMultiplier = 10;
         //_metricLogger = new MetricLogger();
     }
 
@@ -67,10 +67,9 @@ public class MapReduceProcessor implements ISortFile {
             }
 
             //var temp = _metricLogger.startRecording("Writing final results");
+            //long count = pool.getCompletedTaskCount();
             ReducedRecordWriter.WriteRecords(outputFile, reduceDataManager.getFinalResult());
             //_metricLogger.stopRecording(temp);
-
-            //_metricLogger.writeToConsole();
         }
     }
 
