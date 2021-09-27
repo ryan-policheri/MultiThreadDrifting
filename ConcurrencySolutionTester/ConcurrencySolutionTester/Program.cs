@@ -15,7 +15,7 @@ namespace ConcurrencySolutionTester
 
         private static readonly int[] _threadCountsToTest = { 1, 2, 4, 8, 16, 32, 64, 128 };
         private static readonly string _baselineSolution = "BASELINE";
-        private static readonly string[] _solutionsToTest = { "MAP_REDUCE" };
+        private static readonly string[] _solutionsToTest = { "QUICK_SORT" };
 
         private static string _jarFile;
         private static bool _inputFilesAlreadyExist = false;
