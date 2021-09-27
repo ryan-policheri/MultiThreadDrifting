@@ -3,3 +3,7 @@ bin/TestThreadSort.class
 *.class
 *.bin
 /.idea/
+/ConcurrencySolutionTester/ConcurrencySolutionTester/obj
+/ConcurrencySolutionTester/.vs/ConcurrencySolutionTester/v16
+/ConcurrencySolutionTester/.vs/ConcurrencySolutionTester/DesignTimeBuild
+/files

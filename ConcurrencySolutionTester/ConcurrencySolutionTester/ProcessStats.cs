@@ -4,6 +4,10 @@ namespace ConcurrencySolutionTester
 {
     public class ProcessStats
     {
+        public ProcessStats()
+        {
+        }
+
         public ProcessStats(DateTime startTime, DateTime endTime, bool didExit)
         {
             StartTime = startTime;
@@ -17,7 +21,7 @@ namespace ConcurrencySolutionTester
 
         public bool DidFinish { get; }
 
-        public int SecondsEllapsed => (EndTime - StartTime).Seconds;
-        public int MillisecondsEllapsed => (EndTime - StartTime).Milliseconds;
+        public int SecondsEllapsed => (DidFinish ? (EndTime - StartTime).Seconds : -1);
+        public int MillisecondsEllapsed => (DidFinish ? (EndTime - StartTime).Milliseconds : -1);
     }
 }

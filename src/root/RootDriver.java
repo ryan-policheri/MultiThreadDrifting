@@ -42,6 +42,7 @@ public class RootDriver {
            // metricRecorder.writeActionExpense("Taking Raw Long Chunk");
            // metricRecorder.writeActionExpense("Checking out pair");
            // metricRecorder.writeActionExpense("Writing final results");
+            System.exit(0);
         }
     }
 

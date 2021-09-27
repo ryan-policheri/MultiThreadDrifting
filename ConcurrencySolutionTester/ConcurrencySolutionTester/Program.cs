@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.Json;
 
 namespace ConcurrencySolutionTester
@@ -31,9 +32,10 @@ namespace ConcurrencySolutionTester
             {
                 try
                 {
+                    ICollection<ProcessStats> stats = new List<ProcessStats>();
                     string command = $"java -jar {_jarFile.Quotify()} {test.InputFile.FilePath} {test.OutputFile.Quotify()} {test.ThreadCount} {test.Solution}";
-                    ProcessStats stats = SystemFunctions.RunSystemProcess(command);
-                    test.Stats = stats;
+                    stats.Add(SystemFunctions.RunSystemProcess(command)); stats.Add(SystemFunctions.RunSystemProcess(command)); stats.Add(SystemFunctions.RunSystemProcess(command));
+                    test.Stats = stats.OrderBy(x => x.MillisecondsEllapsed).First(); //take best of 3
                 }
                 catch (Exception ex)
                 {
@@ -41,8 +43,11 @@ namespace ConcurrencySolutionTester
                 }
             }
 
-            string json = JsonSerializer.Serialize(testsToPerform);
-            Console.Write("FOO");
+            TestReporter reporter = new TestReporter(testsToPerform);
+            ExcelService service = new ExcelService();
+            string outputFile = SystemFunctions.CombineDirectoryComponents(_workingDirectory, DateTime.Now.Ticks + "_" + "Results.xlsx");
+            service.ExportTests(reporter, outputFile);
+            SystemFunctions.OpenFile(outputFile);
         }
 
         private static ICollection<PerformedTest> CreateTestsToPerform(ICollection<TestFile> testFiles)
@@ -51,7 +56,7 @@ namespace ConcurrencySolutionTester
 
             foreach (TestFile test in testFiles)
             {
-                performedTests.Add(new PerformedTest(test, _baselineSolution, 1));
+                //performedTests.Add(new PerformedTest(test, _baselineSolution, 1));
 
                 foreach (int threadCount in _threadCountsToTest)
                 {

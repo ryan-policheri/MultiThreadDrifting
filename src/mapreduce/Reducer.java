@@ -39,6 +39,7 @@ public class Reducer {
 
     private ReductionResult performReduceAndMultiplex(ReductionResultPair pair) {
         int maxLength = pair.Result1.recordCount() + pair.Result2.recordCount();
+        int weigthedLength = pair.Result1.RecordWeightedLength + pair.Result2.RecordWeightedLength;
         ArrayList<ReducedRecord> records = new ArrayList<ReducedRecord>(maxLength);
 
         ReducedRecord[] result1 = pair.Result1.Records;
@@ -47,7 +48,6 @@ public class Reducer {
         int result2Index = 0;
 
         int lastUsedIndex = -1;
-        int weigthedLength = 0;
 
         for(int i = 0; i < maxLength; i++) {
             if (result1Index >= result1.length) result1Index = -1;
@@ -59,29 +59,24 @@ public class Reducer {
                 if (result1Record.Number == result2Record.Number) {
                     int combinedCount = result1Record.Count + result2Record.Count;
                     records.add(i, new ReducedRecord(result1Record.Number, combinedCount));
-                    weigthedLength += combinedCount;
                     result1Index++;
                     result2Index++;
                 }
                 else if (result1Record.Number < result2Record.Number) {
                     records.add(i, result1Record);
-                    weigthedLength += result1Record.Count;
                     result1Index++;
                 }
                 else {
                     records.add(i, result2Record);
-                    weigthedLength += result2Record.Count;
                     result2Index++;
                 }
             }
             else if (result1Index != -1 && result2Index == -1) {
                 records.add(i, result1[result1Index]);
-                weigthedLength += result1[result1Index].Count;
                 result1Index++;
             }
             else if (result1Index == -1 && result2Index != -1) {
                 records.add(i, result2[result2Index]);
-                weigthedLength += result2[result2Index].Count;
                 result2Index++;
             }
             else { lastUsedIndex = i - 1; break; }
