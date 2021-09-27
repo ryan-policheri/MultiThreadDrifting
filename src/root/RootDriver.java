@@ -38,6 +38,10 @@ public class RootDriver {
             Instant totalEndTime = Instant.now();
             long totalTimeTaken = Duration.between(totalStartTime, totalEndTime).toMillis();
             System.out.printf("Total time taken for " + solution + " with " + numberOfThreads + " threads" + ": %dms\n", totalTimeTaken);
+            //var metricRecorder = ((MapReduceProcessor)processor).get_metricLogger();
+           // metricRecorder.writeActionExpense("Taking Raw Long Chunk");
+           // metricRecorder.writeActionExpense("Checking out pair");
+           // metricRecorder.writeActionExpense("Writing final results");
         }
     }
 

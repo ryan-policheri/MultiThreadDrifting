@@ -22,13 +22,15 @@ public class ReduceJob implements Runnable {
     public void run() {
         if (_longs != null) {
             Reducer reducer = new Reducer(_longs);
-            ReductionResult result = reducer.Reduce();
+            ReductionResult result = reducer.reduceAndSort();
             _manager.pushReducedChunk(result);
         }
         else { //pair not null
             Reducer reducer = new Reducer(_pair);
-            ReductionResult result = reducer.Reduce();
+            ReductionResult result = reducer.reduceAndSort();
             _manager.pushReducedChunk(result);
         }
+        //long threadId = Thread.currentThread().getId();
+        //System.out.println(threadId + " did work");
     }
 }
