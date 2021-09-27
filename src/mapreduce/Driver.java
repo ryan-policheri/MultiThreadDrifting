@@ -8,8 +8,8 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 
 public class Driver {
-    private static final int _workerThreads = 5;
-    private static final int _inputLength = 1000000;
+    private static final int _workerThreads = 16;
+    private static final int _inputLength = 10000000;
 
     public static void main(String[] args) throws IOException, InterruptedException {
         String inputFile = args[0]; //This file would come generated. But generating it below for convenience
