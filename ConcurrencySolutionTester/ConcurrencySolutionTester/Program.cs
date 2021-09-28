@@ -8,6 +8,8 @@ namespace ConcurrencySolutionTester
 {
     public class Program
     {
+        private static int _testSetCount = 3;
+
         private static readonly int[] _fileSizesToTest = { 10000, 100000, 1000000, 10000000 };
         private static readonly string[] _genPatternsToTest = { "SPLIT_1000", "SPLIT_1000_SORTED", "EVEN_DISTRIBUTION", "POSITIVE_MILLION", "ALL_SAME" };
 
@@ -25,17 +27,28 @@ namespace ConcurrencySolutionTester
             if (args.Length > 1 && args[1]?.CapsAndTrim() == "TRUE") _inputFilesAlreadyExist = true;
             else SystemFunctions.CreateFreshDirectory(_workingDirectory);
 
-            ICollection<TestFile> testFiles = BuildTestFiles();
+            ICollection<TestFileSet> testFiles = BuildTestFiles(_testSetCount, _inputFilesAlreadyExist);
             ICollection<PerformedTest> testsToPerform = CreateTestsToPerform(testFiles);
 
             foreach (PerformedTest test in testsToPerform)
             {
                 try
                 {
-                    ICollection<ProcessStats> stats = new List<ProcessStats>();
-                    string command = $"java -jar {_jarFile.Quotify()} {test.InputFile.FilePath} {test.OutputFile.Quotify()} {test.ThreadCount} {test.Solution}";
-                    stats.Add(SystemFunctions.RunSystemProcess(command)); stats.Add(SystemFunctions.RunSystemProcess(command)); stats.Add(SystemFunctions.RunSystemProcess(command));
-                    test.Stats = stats.OrderBy(x => x.MillisecondsEllapsed).First(); //take best of 3
+                    ICollection<ProcessStats> statsAcrossSets = new List<ProcessStats>();
+
+                    for(int i = 0; i < _testSetCount; i++)
+                    {
+                        ICollection<ProcessStats> stats = new List<ProcessStats>();
+                        TestFile testFile = test.InputFileSet.TestFiles.ElementAt(i);
+                        string outputFileName = test.OutputFiles[i];
+                        string command = $"java -jar {_jarFile.Quotify()} {testFile.FilePath} {outputFileName.Quotify()} {test.ThreadCount} {test.Solution}";
+                        stats.Add(SystemFunctions.RunSystemProcess(command)); stats.Add(SystemFunctions.RunSystemProcess(command)); stats.Add(SystemFunctions.RunSystemProcess(command));
+                        ProcessStats bestStat = stats.OrderBy(x => x.MillisecondsEllapsed).First(); //take best of 3
+                        statsAcrossSets.Add(bestStat);
+                    }
+
+                    int average = (int)statsAcrossSets.Select(x => x.MillisecondsEllapsed).Average();
+                    test.BestRunAveragedAcrossSets = average;
                 }
                 catch (Exception ex)
                 {
@@ -50,11 +63,11 @@ namespace ConcurrencySolutionTester
             SystemFunctions.OpenFile(outputFile);
         }
 
-        private static ICollection<PerformedTest> CreateTestsToPerform(ICollection<TestFile> testFiles)
+        private static ICollection<PerformedTest> CreateTestsToPerform(ICollection<TestFileSet> testFileSets)
         {
             ICollection<PerformedTest> performedTests = new List<PerformedTest>();
 
-            foreach (TestFile test in testFiles)
+            foreach (TestFileSet testSet in testFileSets)
             {
                 //performedTests.Add(new PerformedTest(test, _baselineSolution, 1));
 
@@ -62,7 +75,7 @@ namespace ConcurrencySolutionTester
                 {
                     foreach (string solution in _solutionsToTest)
                     {
-                        performedTests.Add(new PerformedTest(test, solution, threadCount));
+                        performedTests.Add(new PerformedTest(testSet, solution, threadCount));
                     }
                 }
             }
@@ -70,32 +83,40 @@ namespace ConcurrencySolutionTester
             return performedTests;
         }
 
-        private static ICollection<TestFile> BuildTestFiles()
+        private static ICollection<TestFileSet> BuildTestFiles(int testSetsCount, bool testFilesAlreadyExist)
         {
-            ICollection<TestFile> tests = new List<TestFile>();
+            ICollection<TestFileSet> testSets = new List<TestFileSet>();
 
             foreach (int fileSize in _fileSizesToTest)
             {
                 foreach (string genPattern in _genPatternsToTest)
                 {
-                    string fileName = $"{fileSize}_{genPattern}.bin";
-                    string filePath = SystemFunctions.CombineDirectoryComponents(_workingDirectory, fileName);
-                    string command = $"java -jar {_jarFile.Quotify()} --GenerateFile {filePath.Quotify()} {fileSize} {genPattern}";
-                    if (!_inputFilesAlreadyExist) SystemFunctions.RunSystemProcess(command);
+                    TestFileSet set = new TestFileSet();
 
-                    TestFile testFilesSpec = new TestFile
+                    for (int i = 0; i < testSetsCount; i++)
                     {
-                        FileSize = fileSize,
-                        GenerationType = genPattern,
-                        FilePath = filePath,
-                        FileDirectory = _workingDirectory
-                    };
+                        string fileName = $"{fileSize}_{genPattern}_Set_{i + 1}.bin";
+                        string filePath = SystemFunctions.CombineDirectoryComponents(_workingDirectory, fileName);
+                        string command = $"java -jar {_jarFile.Quotify()} --GenerateFile {filePath.Quotify()} {fileSize} {genPattern}";
+                        if (!testFilesAlreadyExist) SystemFunctions.RunSystemProcess(command);
 
-                    tests.Add(testFilesSpec);
+                        TestFile testFilesSpec = new TestFile
+                        {
+                            FileSize = fileSize,
+                            GenerationType = genPattern,
+                            FilePath = filePath,
+                            FileDirectory = _workingDirectory,
+                            OwningSet = i+1
+                        };
+
+                        set.TestFiles.Add(testFilesSpec);
+                    }
+
+                    testSets.Add(set);
                 }
             }
 
-            return tests;
+            return testSets;
         }
     }
 }

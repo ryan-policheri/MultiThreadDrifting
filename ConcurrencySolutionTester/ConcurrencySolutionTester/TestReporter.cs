@@ -17,9 +17,9 @@ namespace ConcurrencySolutionTester
 
         public IEnumerable<string> Solutions => _tests.Select(x => x.Solution).Distinct();
 
-        public IEnumerable<int> FileSizes => _tests.Select(x => x.InputFile.FileSize).Distinct();
+        public IEnumerable<int> FileSizes => _tests.Select(x => x.InputFileSet.FileSize).Distinct();
 
-        public IEnumerable<string> GenerationTypes => _tests.Select(x => x.InputFile.GenerationType).Distinct();
+        public IEnumerable<string> GenerationTypes => _tests.Select(x => x.InputFileSet.GenerationType).Distinct();
 
         public IEnumerable<int> ThreadCounts => _tests.Select(x => x.ThreadCount).Distinct();
 
@@ -46,16 +46,16 @@ namespace ConcurrencySolutionTester
                 table.Columns.Add(genType);
             }
 
-            var tests = _tests.Where(x => x.Solution == solution && x.InputFile.FileSize == fileSize);
-            var groups = tests.GroupBy(x =>  new { x.Solution, x.InputFile.FileSize, x.ThreadCount });
+            var tests = _tests.Where(x => x.Solution == solution && x.InputFileSet.FileSize == fileSize);
+            var groups = tests.GroupBy(x =>  new { x.Solution, x.InputFileSet.FileSize, x.ThreadCount });
             foreach (var group in groups)
             {
                 DataRow row = table.NewRow();
                 row["Thread Count"] = group.First().ThreadCount;
                 foreach (string genType in GenerationTypes)
                 {
-                    var genResults = group.Where(x => x.InputFile.GenerationType == genType).First();
-                    row[genType] = genResults.Stats != null ? genResults.Stats.MillisecondsEllapsed : -1;
+                    var genResults = group.Where(x => x.InputFileSet.GenerationType == genType).First();
+                    row[genType] = genResults.BestRunAveragedAcrossSets;
                 }
 
                 table.Rows.Add(row);
