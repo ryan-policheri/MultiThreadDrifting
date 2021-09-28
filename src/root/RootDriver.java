@@ -1,7 +1,5 @@
 package root;
 
-import bucketsort1.BucketSort1Processor;
-import common.BaseLineSortProcessor;
 import common.BinaryFileToTextFile;
 import common.DataSetGenerator;
 import common.ISortFile;
@@ -13,8 +11,6 @@ import java.time.Duration;
 import java.time.Instant;
 
 public class RootDriver {
-    public static String BASELINE = "BASELINE";
-    public static String BUCKET_SORT = "BUCKET_SORT";
     public static String MAP_REDUCE = "MAP_REDUCE";
     public static String QUICK_SORT = "QUICK_SORT";
 
@@ -24,12 +20,12 @@ public class RootDriver {
             String inputFilePath = args[0].replace("\"", "");
             String outputFilePath = args[1].replace("\"", "");
             int numberOfThreads = Integer.parseInt(args[2]);
-            String solution = args[3].toUpperCase();
+            String solution;
+            if (args.length >= 4) solution = args[3].toUpperCase(); //You can specify MAP_REDUCE or QUICK_SORT as the 4th arg. Otherwise default to QUICK_SORT
+            else solution = QUICK_SORT;
 
             ISortFile processor;
-            if (solution.equals(BASELINE)) processor = new BaseLineSortProcessor();
-            else if (solution.equals(BUCKET_SORT)) processor = new BucketSort1Processor(100, numberOfThreads); //we don't know what a good bucket length is ahead of time, that's the problem w/ bucket sort
-            else if (solution.equals(MAP_REDUCE)) processor = new MapReduceProcessor(numberOfThreads);
+            if (solution.equals(MAP_REDUCE)) processor = new MapReduceProcessor(numberOfThreads);
             else if (solution.equals(QUICK_SORT)) processor = new QuickSortProcessor(numberOfThreads);
             else throw new IllegalArgumentException("Solution name not known");
 
@@ -38,10 +34,6 @@ public class RootDriver {
             Instant totalEndTime = Instant.now();
             long totalTimeTaken = Duration.between(totalStartTime, totalEndTime).toMillis();
             System.out.printf("Total time taken for " + solution + " with " + numberOfThreads + " threads" + ": %dms\n", totalTimeTaken);
-            //var metricRecorder = ((MapReduceProcessor)processor).get_metricLogger();
-           // metricRecorder.writeActionExpense("Taking Raw Long Chunk");
-           // metricRecorder.writeActionExpense("Checking out pair");
-           // metricRecorder.writeActionExpense("Writing final results");
             System.exit(0);
         }
     }

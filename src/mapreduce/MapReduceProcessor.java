@@ -2,7 +2,6 @@ package mapreduce;
 
 import common.DataLoader;
 import common.ISortFile;
-import common.MetricLogger;
 import common.ReadLongInputJob;
 
 import java.io.File;
@@ -15,12 +14,9 @@ public class MapReduceProcessor implements ISortFile {
     private final int _numberOfThreads;
     private final int _chunkMultiplier;
 
-    //private MetricLogger _metricLogger;
-
     public MapReduceProcessor(int numberOfThreads) {
         _numberOfThreads = numberOfThreads;
         _chunkMultiplier = 10;
-        //_metricLogger = new MetricLogger();
     }
 
     @Override
@@ -47,17 +43,13 @@ public class MapReduceProcessor implements ISortFile {
             while (!done) {
                 if (reduceDataManager.hasReducedAllData()) { done = true; }
                 else {
-                    //var temp = _metricLogger.startRecording("Taking Raw Long Chunk");
                     ArrayList<Long> chunk = reduceDataManager.takeLongChunk();
-                    //_metricLogger.stopRecording(temp);
 
                     if (chunk != null) {
                         ReduceJob reduceJob = new ReduceJob(reduceDataManager, chunk);
                         pool.execute(reduceJob);
                     } else {
-                        //temp = _metricLogger.startRecording("Checking out pair");
                         ReductionResultPair pair = reduceDataManager.tryPopReducedRecordPair();
-                        //_metricLogger.stopRecording(temp);
                         if (pair != null) {
                             ReduceJob reduceJob = new ReduceJob(reduceDataManager, pair);
                             pool.execute(reduceJob);
@@ -66,15 +58,7 @@ public class MapReduceProcessor implements ISortFile {
                 }
             }
 
-            //var temp = _metricLogger.startRecording("Writing final results");
-            //long count = pool.getCompletedTaskCount();
             ReducedRecordWriter.WriteRecords(outputFile, reduceDataManager.getFinalResult());
-            //_metricLogger.stopRecording(temp);
         }
     }
-
-    public MetricLogger get_metricLogger() {
-        return null;//_metricLogger;
-    }
-
 }
