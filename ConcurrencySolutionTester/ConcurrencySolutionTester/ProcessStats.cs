@@ -22,6 +22,6 @@ namespace ConcurrencySolutionTester
         public bool DidFinish { get; }
 
         public int SecondsEllapsed => (DidFinish ? (EndTime - StartTime).Seconds : -1);
-        public int MillisecondsEllapsed => (DidFinish ? (EndTime - StartTime).Milliseconds : -1);
+        public double MillisecondsEllapsed => (DidFinish ? (EndTime - StartTime).TotalMilliseconds : -1);
     }
 }
