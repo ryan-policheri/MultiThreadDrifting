@@ -2,7 +2,7 @@
   "profiles": {
     "ConcurrencySolutionTester": {
       "commandName": "Project",
-      "commandLineArgs": "C:\\Users\\Ryan-\\source\\repos\\MultiThreadDrifting\\classes\\artifacts\\MultiThreadDrifting_jar\\MultiThreadDrifting.jar true"
+      "commandLineArgs": "C:\\Users\\Ryan-\\source\\repos\\MultiThreadDrifting\\classes\\artifacts\\MultiThreadDrifting_jar\\MultiThreadDrifting.jar FALSE"
     }
   }
 }
