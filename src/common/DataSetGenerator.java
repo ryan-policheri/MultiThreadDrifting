@@ -42,14 +42,7 @@ public class DataSetGenerator {
 
         File file = new File(filePath);
         if(file.exists()) { Files.delete(file.toPath()); }
-        FileOutputStream fos = new FileOutputStream(file);
-        DataOutputStream dos = new DataOutputStream(fos);
-
-        for (int i = 0; i < batch.length; i++) {
-            dos.writeLong(batch[i]);
-        }
-        dos.close();
-        fos.close();
+        LongWriter.writeLongArray(filePath, batch);
     }
 
     private static void fillLongArraySplit1000(long[] batch) { //ranged from -999 to 999
@@ -95,10 +88,12 @@ public class DataSetGenerator {
         int remainder = batch.length % differentNumberCount;
         HashSet<Long> hashSet = new HashSet<Long>();
 
+        Random r = new Random(23625);
         for(int i = 0; i < differentNumberCount; i++) {
-            Random r = new Random(23625);
             long num = r.nextLong();
-            while(hashSet.contains(num)) { num = r.nextLong(); }
+            while(hashSet.contains(num)) {
+                num = r.nextLong();
+            }
             hashSet.add(num);
             for (int j = 0; j < duplicatesPerValue; j++) {
                 batch[index++] = num;

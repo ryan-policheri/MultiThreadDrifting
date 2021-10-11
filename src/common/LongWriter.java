@@ -1,46 +1,37 @@
 package common;
 
-import java.io.DataOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 
 public class LongWriter {
 
     public static void writeLongArray(String filePath, long[] longs) throws IOException {
         File file = new File(filePath);
-        FileOutputStream fos = new FileOutputStream(file);
-        DataOutputStream dos = new DataOutputStream(fos);
+        FileOutputStream fileWriter = new FileOutputStream(file);
+        BufferedOutputStream bufferedWriter = new BufferedOutputStream(fileWriter);
 
-        for (int i = 0; i < longs.length; i++) {
-            dos.writeLong(longs[i]);
+        try {
+            for (long num : longs) {
+                ByteBuffer buffer = ByteBuffer.allocate(Long.BYTES);
+                buffer.putLong(num);
+                bufferedWriter.write(buffer.array());
+            }
         }
-        dos.close();
-        fos.close();
-    }
+        catch(Exception ex) {
 
-    public static void writeLongArray(String filePath, Long[] longs) throws IOException {
-        File file = new File(filePath);
-        FileOutputStream fos = new FileOutputStream(file);
-        DataOutputStream dos = new DataOutputStream(fos);
-
-        for (int i = 0; i < longs.length; i++) {
-            dos.writeLong(longs[i]);
         }
-        dos.close();
-        fos.close();
+        finally {
+            bufferedWriter.close();
+            fileWriter.close();
+        }
     }
 
     public static void writeLongArray(String filePath, ArrayList<Long> longs) throws IOException {
-        File file = new File(filePath);
-        FileOutputStream fos = new FileOutputStream(file);
-        DataOutputStream dos = new DataOutputStream(fos);
-
-        for (int i = 0; i < longs.size(); i++) {
-            dos.writeLong(longs.get(i));
+        long[] asArray = new long[longs.size()];
+        for(int i = 0; i <= asArray.length; i++) {
+            asArray[i] = longs.get(i);
         }
-        dos.close();
-        fos.close();
+        writeLongArray(filePath, asArray);
     }
 }
