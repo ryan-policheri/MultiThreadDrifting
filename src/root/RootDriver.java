@@ -47,7 +47,16 @@ public class RootDriver {
         int inputSize = Integer.parseInt(fileLength);
         generationType = generationType.toUpperCase();
 
-        DataSetGenerator.GenerateInputFile(path, inputSize, generationType);
-        if (args.length == 5 && args[4].toUpperCase().equals("TRUE")) BinaryFileToTextFile.ConvertBinaryLongsToTextLongs(path);
+        int differentNumberCount = -1;
+        if (generationType.equals(DataSetGenerator.X_DIFFERENT_NUMBERS)) {
+            differentNumberCount = Integer.parseInt(args[4]);
+        }
+
+        DataSetGenerator.GenerateInputFile(path, inputSize, generationType, differentNumberCount);
+
+        if (!generationType.equals(DataSetGenerator.X_DIFFERENT_NUMBERS) && args.length == 5 && args[4].toUpperCase().equals("TRUE"))
+            BinaryFileToTextFile.ConvertBinaryLongsToTextLongs(path);
+        else if (generationType.equals(DataSetGenerator.X_DIFFERENT_NUMBERS) && args.length == 6 && args[5].toUpperCase().equals("TRUE"))
+            BinaryFileToTextFile.ConvertBinaryLongsToTextLongs(path);
     }
 }
