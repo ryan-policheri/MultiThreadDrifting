@@ -11,7 +11,16 @@ namespace ConcurrencySolutionTester
         private static int _testSetCount = 3;
 
         private static readonly int[] _fileSizesToTest = { 10000, 100000, 1000000, 10000000 };
-        private static readonly string[] _genPatternsToTest = { "SPLIT_1000", "SPLIT_1000_SORTED", "EVEN_DISTRIBUTION", "POSITIVE_MILLION", "ALL_SAME" };
+
+        private static readonly string[] _genPatternsToTest =
+        {
+            GenerationPatterns.SPLIT_1000,
+            GenerationPatterns.SPLIT_1000_SORTED,
+            GenerationPatterns.EVEN_DISTRIBUTION,
+            GenerationPatterns.POSITIVE_MILLION,
+            GenerationPatterns.ALL_SAME,
+            GenerationPatterns.BuildXDifferentNumbersInstance(100)
+        };
 
         private static readonly int[] _threadCountsToTest = { 1, 2, 4, 8, 16, 32, 64, 128 };
         private static readonly string _baselineSolution = "BASELINE";
@@ -97,7 +106,11 @@ namespace ConcurrencySolutionTester
                     {
                         string fileName = $"{fileSize}_{genPattern}_Set_{i + 1}.bin";
                         string filePath = SystemFunctions.CombineDirectoryComponents(_workingDirectory, fileName);
-                        string command = $"java -jar {_jarFile.Quotify()} --GenerateFile {filePath.Quotify()} {fileSize} {genPattern}";
+
+                        string command = $"java -jar {_jarFile.Quotify()} --GenerateFile {filePath.Quotify()} {fileSize} ";
+                        if (!genPattern.StartsWith(GenerationPatterns.X_DIFFERENT_NUMBERS)) command += $"{genPattern}";
+                        else if (genPattern.StartsWith(GenerationPatterns.X_DIFFERENT_NUMBERS)) command += $"{GenerationPatterns.X_DIFFERENT_NUMBERS} {GenerationPatterns.GetX(genPattern)}";
+
                         if (!testFilesAlreadyExist) SystemFunctions.RunSystemProcess(command);
 
                         TestFile testFilesSpec = new TestFile
